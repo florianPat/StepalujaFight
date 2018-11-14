@@ -3,6 +3,10 @@ package de.patruck.stepaluja;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -21,7 +25,12 @@ public class OnScreenControls extends InputAdapter
     private int moveRightPointer;
     private int jumpPointer;
     private int hitPointer;
-    private ShapeRenderer renderer;
+    private ShapeRenderer shapeRenderer;
+    private SpriteBatch renderer;
+
+    //TODO: Add "faust" btn!
+    private Texture textures[];
+    private Sprite sprites[];
 
     public class InputSystem
     {
@@ -53,11 +62,34 @@ public class OnScreenControls extends InputAdapter
 
     public InputSystem input;
 
-    public OnScreenControls()
+    public OnScreenControls(AssetManager assetManager)
     {
         input = new InputSystem();
         viewport = new ExtendViewport(VIEWPORT_SIZE, VIEWPORT_SIZE);
-        renderer = new ShapeRenderer();
+
+        shapeRenderer = new ShapeRenderer();
+        renderer = new SpriteBatch();
+
+        textures = new Texture[3];
+
+        assetManager.load("menu/Pfeil_links.png", Texture.class);
+        assetManager.load("menu/Pfeil_oben.png", Texture.class);
+        assetManager.load("menu/Pfeil_rechts.png", Texture.class);
+        assetManager.finishLoading();
+
+        textures[0] = assetManager.get("menu/Pfeil_links.png", Texture.class);
+        textures[1] = assetManager.get("menu/Pfeil_rechts.png", Texture.class);
+        textures[2] = assetManager.get("menu/Pfeil_oben.png", Texture.class);
+
+        sprites = new Sprite[3];
+        sprites[0] = new Sprite(textures[0]);
+        sprites[1] = new Sprite(textures[1]);
+        sprites[2] = new Sprite(textures[2]);
+
+        for(Sprite sprite : sprites)
+        {
+            sprite.setSize(BUTTON_RADIUS * 2.0f, BUTTON_RADIUS * 2.0f);
+        }
     }
 
     @Override
@@ -203,13 +235,17 @@ public class OnScreenControls extends InputAdapter
     public void render()
     {
         viewport.apply();
+        shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
         renderer.setProjectionMatrix(viewport.getCamera().combined);
 
-        renderer.begin(ShapeRenderer.ShapeType.Filled);
-        renderer.circle(moveLeftCenter.x, moveLeftCenter.y, BUTTON_RADIUS);
-        renderer.circle(moveRightCenter.x, moveRightCenter.y, BUTTON_RADIUS);
-        renderer.circle(hitCenter.x, hitCenter.y, BUTTON_RADIUS);
-        renderer.circle(jumpCenter.x, jumpCenter.y, BUTTON_RADIUS);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.circle(hitCenter.x, hitCenter.y, BUTTON_RADIUS);
+        shapeRenderer.end();
+
+        renderer.begin();
+        sprites[0].draw(renderer);
+        sprites[1].draw(renderer);
+        sprites[2].draw(renderer);
         renderer.end();
     }
 
@@ -222,6 +258,10 @@ public class OnScreenControls extends InputAdapter
         moveRightCenter.set(xPosPart * 2, yPos);
         hitCenter.set(viewport.getWorldWidth() - xPosPart * 2, yPos);
         jumpCenter.set(viewport.getWorldWidth() - xPosPart, yPos);
+
+        sprites[0].setCenter(moveLeftCenter.x, moveLeftCenter.y);
+        sprites[1].setCenter(moveRightCenter.x, moveRightCenter.y);
+        sprites[2].setCenter(jumpCenter.x, jumpCenter.y);
     }
 
     public void dispose()

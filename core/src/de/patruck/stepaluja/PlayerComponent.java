@@ -86,6 +86,7 @@ public class PlayerComponent extends AnimationComponent {
 
         inputSystem = inputSystemIn;
 
+        // 8 or 3
         textureSmash = assetManager.get(textureAtlas[8]);
 
         //create body
@@ -109,7 +110,7 @@ public class PlayerComponent extends AnimationComponent {
         offset = new Vector2(0.0f, yOffset);
         hittingVec = new Vector2(1.0f, 0.0f);
 
-        Utils.aassert(animation.containsKey("right-walk"));
+        assert(animation.containsKey("right-walk"));
         current = animation.get("right-walk").getKeyFrame(0.0f);
         sprite = new Sprite(current);
 
@@ -131,7 +132,7 @@ public class PlayerComponent extends AnimationComponent {
         smashFunction = new Function() {
             @Override
             public void Event(EventData eventData) {
-                Utils.aassert(eventData instanceof SmashEventData);
+                assert(eventData instanceof SmashEventData);
                 SmashEventData event = (SmashEventData) eventData;
 
                 int playerId = event.getPlayerId();
@@ -220,7 +221,7 @@ public class PlayerComponent extends AnimationComponent {
                 hittingVec.x = -1.0f;
                 if(jumpState == JumpState.NONE)
                 {
-                    Utils.aassert(animation.containsKey("left-walk"));
+                    assert(animation.containsKey("left-walk"));
                     current = animation.get("left-walk").getKeyFrame(stateTime, true);
                 }
                 walkState = WalkState.LEFT;
@@ -231,7 +232,7 @@ public class PlayerComponent extends AnimationComponent {
                 hittingVec.x = 1.0f;
                 if(jumpState == JumpState.NONE)
                 {
-                    Utils.aassert (animation.containsKey("right-walk"));
+                    assert (animation.containsKey("right-walk"));
                     current = animation.get("right-walk").getKeyFrame(stateTime, true);
                 }
                 walkState = WalkState.RIGHT;
@@ -268,8 +269,9 @@ public class PlayerComponent extends AnimationComponent {
 
             //fighting
             if(playerId == 0 ? inputSystem.isHitPressed() : Gdx.input.isKeyJustPressed(input[3])
-                && smashState == JumpState.NONE)
+                    && smashState == JumpState.NONE)
             {
+                textureSmash = walkState == WalkState.RIGHT ? animation.get("right-walk").getKeyFrame(0.0f, true) : animation.get("left-walk").getKeyFrame(0.0f, true);
                 current = textureSmash;
                 bodySmash.setIsActive(true);
                 smashState = JumpState.JUMPING;
@@ -304,13 +306,13 @@ public class PlayerComponent extends AnimationComponent {
             {
                 case LEFT:
                 {
-                    Utils.aassert(animation.containsKey("left-walk"));
+                    assert(animation.containsKey("left-walk"));
                     current = animation.get("left-walk").getKeyFrame(0.0f);
                     break;
                 }
                 case RIGHT:
                 {
-                    Utils.aassert(animation.containsKey("right-walk"));
+                    assert(animation.containsKey("right-walk"));
                     current = animation.get("right-walk").getKeyFrame(0.0f);
                     break;
                 }

@@ -13,7 +13,8 @@ public class MenuLevel extends Level
 {
     public enum LevelComponentName
     {
-        MainMenu
+        MainMenu,
+        CreditsMenu
     }
 
     private Texture menuTex;
@@ -46,6 +47,12 @@ public class MenuLevel extends Level
             case MainMenu:
             {
                 menuComponent = new MainMenuComponent(viewport, worldSize,
+                        new Vector2(menuSprite.getWidth(), menuSprite.getHeight()), screenManager);
+                break;
+            }
+            case CreditsMenu:
+            {
+                menuComponent = new CreditsMenuComponent(viewport, worldSize,
                         new Vector2(menuSprite.getWidth(), menuSprite.getHeight()), screenManager);
                 break;
             }

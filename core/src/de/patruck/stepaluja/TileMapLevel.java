@@ -26,7 +26,7 @@ public class TileMapLevel extends Level
     {
         map = new Tilemap(levelName, assetManager, physics, screenManager, worldSize);
 
-        onScreenControls = new OnScreenControls();
+        onScreenControls = new OnScreenControls(assetManager);
         Gdx.input.setInputProcessor(onScreenControls);
     }
 
