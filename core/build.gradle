@@ -6,5 +6,5 @@ eclipse.project {
     name = appName + "-core"
 }
 dependencies {
-    implementation files('E:/MeinProgrammierdingsbums/Android/StepalujaFight/android/libs/JavaIpify.jar')
+    implementation files('../android/libs/JavaIpify.jar')
 }
