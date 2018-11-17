@@ -1,6 +1,6 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.assets.*;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public abstract class Component

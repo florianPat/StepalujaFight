@@ -2,7 +2,6 @@ package de.patruck.stepaluja;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
 
 public class EventManager
 {

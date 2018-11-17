@@ -6,6 +6,7 @@ import com.jmr.wrapper.common.exceptions.NNCantStartServer;
 import com.jmr.wrapper.common.listener.SocketListener;
 import com.jmr.wrapper.server.Server;
 import org.ipify.Ipify;
+
 import java.io.IOException;
 
 public class GameServerLobbyLevel extends LoadingLevel

@@ -1,21 +1,17 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import com.badlogic.gdx.graphics.Color;
 
 public class PlayerComponent extends AnimationComponent {
 
@@ -75,8 +71,12 @@ public class PlayerComponent extends AnimationComponent {
 
     private OnScreenControls.InputSystem inputSystem;
 
+    private OrthographicCamera camera;
+    private final float CAMERA_PLAYER_OFFSET = -3.0f;
+
     public PlayerComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
-                           int n, float worldWidthIn, float worldHeightIn, OnScreenControls.InputSystem inputSystemIn) {
+                           int n, float worldWidthIn, float worldHeightIn, OnScreenControls.InputSystem inputSystemIn,
+                           OrthographicCamera cameraIn) {
         super(eventManager, assetManager, spriteBatch, physics, owner, textureAtlas);
 
         playerId = n;
@@ -85,6 +85,8 @@ public class PlayerComponent extends AnimationComponent {
         worldHeight = worldHeightIn;
 
         inputSystem = inputSystemIn;
+
+        camera = cameraIn;
 
         // 8 or 3
         textureSmash = assetManager.get(textureAtlas[8]);
@@ -110,7 +112,7 @@ public class PlayerComponent extends AnimationComponent {
         offset = new Vector2(0.0f, yOffset);
         hittingVec = new Vector2(1.0f, 0.0f);
 
-        assert(animation.containsKey("right-walk"));
+        Utils.aassert(animation.containsKey("right-walk"));
         current = animation.get("right-walk").getKeyFrame(0.0f);
         sprite = new Sprite(current);
 
@@ -132,7 +134,7 @@ public class PlayerComponent extends AnimationComponent {
         smashFunction = new Function() {
             @Override
             public void Event(EventData eventData) {
-                assert(eventData instanceof SmashEventData);
+                Utils.aassert(eventData instanceof SmashEventData);
                 SmashEventData event = (SmashEventData) eventData;
 
                 int playerId = event.getPlayerId();
@@ -221,7 +223,7 @@ public class PlayerComponent extends AnimationComponent {
                 hittingVec.x = -1.0f;
                 if(jumpState == JumpState.NONE)
                 {
-                    assert(animation.containsKey("left-walk"));
+                    Utils.aassert(animation.containsKey("left-walk"));
                     current = animation.get("left-walk").getKeyFrame(stateTime, true);
                 }
                 walkState = WalkState.LEFT;
@@ -232,7 +234,7 @@ public class PlayerComponent extends AnimationComponent {
                 hittingVec.x = 1.0f;
                 if(jumpState == JumpState.NONE)
                 {
-                    assert (animation.containsKey("right-walk"));
+                    Utils.aassert (animation.containsKey("right-walk"));
                     current = animation.get("right-walk").getKeyFrame(stateTime, true);
                 }
                 walkState = WalkState.RIGHT;
@@ -306,13 +308,13 @@ public class PlayerComponent extends AnimationComponent {
             {
                 case LEFT:
                 {
-                    assert(animation.containsKey("left-walk"));
+                    Utils.aassert(animation.containsKey("left-walk"));
                     current = animation.get("left-walk").getKeyFrame(0.0f);
                     break;
                 }
                 case RIGHT:
                 {
-                    assert(animation.containsKey("right-walk"));
+                    Utils.aassert(animation.containsKey("right-walk"));
                     current = animation.get("right-walk").getKeyFrame(0.0f);
                     break;
                 }
@@ -345,5 +347,40 @@ public class PlayerComponent extends AnimationComponent {
     public void draw() {
         sprite.setPosition(body.pos.x, body.pos.y);
         sprite.draw(spriteBatch);
+
+        if(playerId == 0)
+        {
+            camera.position.x = body.pos.x;
+            camera.position.y = body.pos.y;
+        }
+        else if(playerId == 1)
+        {
+            float minX = body.pos.x;
+            float minY = body.pos.y;
+
+            if(camera.position.x < minX)
+            {
+                camera.position.x -= CAMERA_PLAYER_OFFSET;
+            }
+            else
+            {
+                camera.position.x = minX - CAMERA_PLAYER_OFFSET;
+            }
+
+            if(camera.position.y < minY)
+            {
+                camera.position.y -= CAMERA_PLAYER_OFFSET;
+            }
+            else
+            {
+                camera.position.y = minY - CAMERA_PLAYER_OFFSET;
+            }
+
+            camera.update();
+        }
+        else
+        {
+            Utils.invalidCodePath();
+        }
     }
 }

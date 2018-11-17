@@ -1,16 +1,17 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.maps.tiled.*;
-import com.badlogic.gdx.assets.*;
-import com.badlogic.gdx.assets.loaders.resolvers.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 public abstract class Level implements Screen
 {
+    protected OrthographicCamera camera;
     protected ExtendViewport viewport;
     protected SpriteBatch spriteBatch;
     protected GameObjectManager gom;
@@ -32,6 +33,8 @@ public abstract class Level implements Screen
     public void show()
     {
         viewport = new ExtendViewport(worldSize.x, worldSize.y);
+        camera = new OrthographicCamera();
+        viewport.setCamera(camera);
         spriteBatch = new SpriteBatch();
         gom = new GameObjectManager();
         eventManager = new EventManager();

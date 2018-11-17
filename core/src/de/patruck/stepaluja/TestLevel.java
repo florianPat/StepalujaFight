@@ -1,18 +1,6 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.utils.viewport.*;
-import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.Input.Keys;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Circle;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public class TestLevel extends TileMapLevel
 {
@@ -33,13 +21,15 @@ public class TestLevel extends TileMapLevel
         }
         Actor actor = gom.addActor();
         actor.addComponent(new PlayerComponent(eventManager, assetManager, spriteBatch, physics,
-                actor, textureAtlas, n, worldSize.x, worldSize.y, onScreenControls.input));
+                actor, textureAtlas, n, worldSize.x, worldSize.y, onScreenControls.input, camera));
     }
 
     @Override
     public void create()
     {
         super.create();
+
+        camera.zoom = 2.0f;
         
         for(int i = 0; i < playerCount; ++i)
         {

@@ -1,7 +1,7 @@
 package de.patruck.stepaluja;
 
 import java.util.HashMap;
-import java.util.*;
+import java.util.Iterator;
 
 public class Actor
 {

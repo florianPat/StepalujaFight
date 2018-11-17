@@ -1,6 +1,5 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.Vector2;
 
 public class ServicesAvaliableChecker extends Level
@@ -24,6 +23,7 @@ public class ServicesAvaliableChecker extends Level
     public void render(float dt)
     {
         int result = avaliableCheckerResult();
+        Utils.log("Here we are!");
 
         switch (result)
         {
