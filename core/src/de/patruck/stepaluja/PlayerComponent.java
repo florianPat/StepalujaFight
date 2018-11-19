@@ -195,7 +195,7 @@ public class PlayerComponent extends AnimationComponent {
 
     @Override
     public void update(float dt) {
-        currentProgress += 0.1f * dt;
+        currentProgress += 0.05f * dt;
 
         //move
         body.vel.x = 0.0f;
@@ -266,7 +266,7 @@ public class PlayerComponent extends AnimationComponent {
                 jumpTimer += dt;
                 body.vel.y = speed;
                 hittingVec.y = 1.0f;
-                if(jumpTimer >= maxJumpTime)
+                if(jumpTimer >= maxJumpTime || body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.HEAD)
                 {
                     jumpTimer = 0.0f;
                     jumpState = JumpState.FALLING;

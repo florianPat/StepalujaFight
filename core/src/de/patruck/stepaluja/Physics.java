@@ -23,7 +23,7 @@ public class Physics
         RIGHT
     };
 
-    public final float gravity = -98.1f;
+    public final float gravity = -152.2f;
     private HashMap<String, Body> bodies;
     private ShapeRenderer shapeRenderer;
 
