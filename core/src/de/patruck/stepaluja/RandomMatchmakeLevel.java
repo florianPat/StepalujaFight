@@ -7,6 +7,8 @@ public class RandomMatchmakeLevel extends LoadingLevel
     public RandomMatchmakeLevel(GameStart screenManager, Vector2 worldSize)
     {
         super(screenManager, worldSize);
+
+        msg = "Looking for open servers to join!";
     }
 
     @Override
@@ -37,8 +39,7 @@ public class RandomMatchmakeLevel extends LoadingLevel
         else if(!matchmakeWithRandomResult.equals("0"))
         {
             Utils.log("MakeClientLevel");
-            screenManager.setScreen(new TestLevel(screenManager, worldSize));
-            //screenManager.setScreen(new GameClientLevel(matchmakeWithRandomResult, screenManager, worldSize));
+            screenManager.setScreen(new GameClientLobbyLevel(matchmakeWithRandomResult, screenManager, worldSize));
         }
     }
 }

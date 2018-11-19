@@ -79,8 +79,8 @@ class MainMenuComponent extends MenuComponent
 
         if(btns[0].contains(viewportPosition))
         {
-            screenManager.setScreen(new TestLevel(screenManager, worldSize));
-            //screenManager.setScreen(new RandomMatchmakeLevel(screenManager, worldSize));
+            //screenManager.setScreen(new TestLevel(screenManager, worldSize));
+            screenManager.setScreen(new RandomMatchmakeLevel(screenManager, worldSize));
         }
         else if(btns[1].contains(viewportPosition))
         {
