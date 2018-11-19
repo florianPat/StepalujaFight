@@ -78,8 +78,9 @@ public abstract class Level implements Screen
     public void resize(int width, int height)
     {
         viewport.update(width, height, true);
-        worldSize.x = width;
-        worldSize.y = height;
+
+        worldSize.x = viewport.getWorldWidth();
+        worldSize.y = viewport.getWorldHeight();
     }
 
     @Override

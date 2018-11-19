@@ -59,8 +59,6 @@ public class MenuLevel extends Level
             }
         }
 
-        menuSprite.setSize(worldSize.x, worldSize.y);
-
         Gdx.input.setInputProcessor(menuComponent);
     }
 
@@ -86,7 +84,8 @@ public class MenuLevel extends Level
     public void resize(int width, int height)
     {
         super.resize(width, height);
-        menuSprite.setSize(width, height);
+
+        menuSprite.setSize(worldSize.x, worldSize.y);
         menuComponent.recalculateBtnPositions();
     }
 

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
@@ -71,18 +72,29 @@ public class PlayerComponent extends AnimationComponent {
 
     private OnScreenControls.InputSystem inputSystem;
 
+    private final float MIN_CAMERA_ZOOM = 0.35f;
+    private final float MAX_CAMERA_ZOOM = 0.65f;
+
     private OrthographicCamera camera;
-    private final float CAMERA_PLAYER_OFFSET = -3.0f;
+    private float camZoom = MIN_CAMERA_ZOOM;
+    private float newCamZoom = MIN_CAMERA_ZOOM;
+    private float currentProgress = 0.0f;
+
+    private int tilemapWidth;
+    private int tilemapHeight;
 
     public PlayerComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
                            int n, float worldWidthIn, float worldHeightIn, OnScreenControls.InputSystem inputSystemIn,
-                           OrthographicCamera cameraIn) {
+                           OrthographicCamera cameraIn, int tilemapWidthIn, int tilemapHeightIn) {
         super(eventManager, assetManager, spriteBatch, physics, owner, textureAtlas);
 
         playerId = n;
 
         worldWidth = worldWidthIn;
         worldHeight = worldHeightIn;
+
+        tilemapWidth = tilemapWidthIn;
+        tilemapHeight = tilemapHeightIn;
 
         inputSystem = inputSystemIn;
 
@@ -183,6 +195,7 @@ public class PlayerComponent extends AnimationComponent {
 
     @Override
     public void update(float dt) {
+        currentProgress += 0.1f * dt;
 
         //move
         body.vel.x = 0.0f;
@@ -333,7 +346,7 @@ public class PlayerComponent extends AnimationComponent {
         sprite.setTexture(current);
 
         //apply updated body to physics
-        physics.applySpriteToBoundingBox(current, collider, newPos);
+        Physics.applySpriteToBoundingBox(current, collider, newPos);
         collider.updateRectCollider();
 
         offset.add(newPos);
@@ -355,25 +368,63 @@ public class PlayerComponent extends AnimationComponent {
         }
         else if(playerId == 1)
         {
-            float minX = body.pos.x;
-            float minY = body.pos.y;
+            Vector2 newCamPos = new Vector2((body.pos.x + camera.position.x) / 2.0f,
+                    (body.pos.y + camera.position.y) / 2.0f);
 
-            if(camera.position.x < minX)
+            boolean farAway = false;
+
+            float length = body.pos.x - camera.position.x;
+            if(Math.abs(length) >= 200.0f)
             {
-                camera.position.x -= CAMERA_PLAYER_OFFSET;
+                farAway = true;
             }
             else
             {
-                camera.position.x = minX - CAMERA_PLAYER_OFFSET;
+                length = body.pos.y - camera.position.y;
+                if(Math.abs(length) >= 100.0f)
+                {
+                    farAway = true;
+                }
+            }
+
+            if(farAway && newCamZoom != MAX_CAMERA_ZOOM)
+            {
+                newCamZoom = MAX_CAMERA_ZOOM;
+                currentProgress = 0.0f;
+                Utils.log("newCamZoom = 0.5f");
+            }
+            else if(!farAway && newCamZoom != MIN_CAMERA_ZOOM)
+            {
+                newCamZoom = MIN_CAMERA_ZOOM;
+                currentProgress = 0.0f;
+                Utils.log("newCamZoom = 0.25f");
+            }
+            if(newCamZoom != camZoom)
+            {
+                camZoom = MathUtils.lerp(camZoom, newCamZoom, currentProgress);
+            }
+            camera.zoom = camZoom;
+            camera.position.x = newCamPos.x;
+            camera.position.y = newCamPos.y;
+
+            float minX = worldWidth * camZoom / 2.0f;
+            float minY = worldHeight * camZoom / 2.0f;
+            if(camera.position.x < minX)
+            {
+                camera.position.x = minX;
+            }
+            else if(camera.position.x > (tilemapWidth - minX))
+            {
+                camera.position.x = tilemapWidth - minX;
             }
 
             if(camera.position.y < minY)
             {
-                camera.position.y -= CAMERA_PLAYER_OFFSET;
+                camera.position.y = minY;
             }
-            else
+            else if(camera.position.y > (tilemapHeight - minY))
             {
-                camera.position.y = minY - CAMERA_PLAYER_OFFSET;
+                camera.position.y = tilemapHeight - minY;
             }
 
             camera.update();

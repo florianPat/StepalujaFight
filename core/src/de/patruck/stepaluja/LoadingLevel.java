@@ -31,8 +31,6 @@ public class LoadingLevel extends Level
 
         menuSprite = new Sprite(menuTex);
 
-        menuSprite.setSize(worldSize.x, worldSize.y);
-
         font = Utils.getFont(55);
     }
 
@@ -47,7 +45,7 @@ public class LoadingLevel extends Level
 
         spriteBatch.begin();
         menuSprite.draw(spriteBatch);
-        font.draw(spriteBatch, msg, 0.0f, ((float)Gdx.graphics.getHeight()) * 0.15f);
+        font.draw(spriteBatch, msg, 0.0f, worldSize.y * 0.15f);
         spriteBatch.end();
     }
 
@@ -61,10 +59,9 @@ public class LoadingLevel extends Level
     }
 
     @Override
-    public void resize(int width, int height)
-    {
+    public void resize(int width, int height) {
         super.resize(width, height);
 
-        menuSprite.setSize(width, height);
+        menuSprite.setSize(worldSize.x, worldSize.y);
     }
 }

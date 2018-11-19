@@ -61,6 +61,9 @@ public class Tilemap {
         }
     }
 
+    //NOTE: Change if tile size is not quadratic!
+    private final int TILE_SIZE = 32;
+
     private Tile[][] karte;
     private int width, height;
     private Body body = new Body(new Vector2(0.0f, 0.0f), "Ground", new Collider(new Circle(0.0f, 0.0f, 1.0f)), new ArrayList<String>(), false, true);
@@ -103,6 +106,16 @@ public class Tilemap {
         }
     }
 
+    public int getWidth()
+    {
+        return width * TILE_SIZE;
+    }
+
+    public int getHeight()
+    {
+        return height * TILE_SIZE;
+    }
+
     private void ladeKarte(String dateiname) throws IOException
     {
         FileHandle file = Gdx.files.internal(dateiname);
@@ -122,23 +135,23 @@ public class Tilemap {
             {
                 if(zeile.charAt(j) == '0')
                 {
-                    karte[i][j] = new Tile(gras, true, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(gras, true, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zeile.charAt(j) == '1')
                 {
-                    karte[i][j] = new Tile(dirt, true, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(dirt, true, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zeile.charAt(j) == '2')
                 {
-                    karte[i][j] = new Tile(stone, true, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(stone, true, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zeile.charAt(j) == '3')
                 {
-                    karte[i][j] = new Tile(lava, false, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(lava, false, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zeile.charAt(j) == '4')
                 {
-                    karte[i][j] = new Tile(water, false, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(water, false, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else
                 {
@@ -167,15 +180,15 @@ public class Tilemap {
 
                 if(zufall < 3)
                 {
-                    karte[i][j] = new Tile(water, false, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(water, false, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zufall == 3)
                 {
-                    karte[i][j] = new Tile(dirt, true, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(dirt, true, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zufall == 4)
                 {
-                    karte[i][j] = new Tile(stone, true, new Vector2(j*32, i*32), body);
+                    karte[i][j] = new Tile(stone, true, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else
                 {
@@ -195,7 +208,7 @@ public class Tilemap {
                 Tile tile = karte[i][j];
                 Utils.aassert(tile != null);
                 Utils.aassert(tile.getTexture() != null);
-                spriteBatch.draw(tile.getTexture(), j*32, i*32);
+                spriteBatch.draw(tile.getTexture(), j*TILE_SIZE, i*TILE_SIZE);
             }
         }
     }

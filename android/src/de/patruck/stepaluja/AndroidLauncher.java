@@ -11,6 +11,8 @@ public class AndroidLauncher extends AndroidApplication
 {
 	public native static boolean firebaseInitAndroid(Activity activity);
 
+	//TODO: Make firebase connection test!
+
 	@Override
 	protected void onCreate (Bundle savedInstanceState)
 	{

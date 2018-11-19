@@ -27,7 +27,6 @@ public class ErrorLevel extends Level {
     public void render(float dt)
     {
         showingErrorTime += dt;
-        showingErrorTime += dt;
         if(showingErrorTime >= 5.0f)
         {
             Gdx.app.error("UtilsLogBreak", errorMsg);

@@ -21,15 +21,14 @@ public class TestLevel extends TileMapLevel
         }
         Actor actor = gom.addActor();
         actor.addComponent(new PlayerComponent(eventManager, assetManager, spriteBatch, physics,
-                actor, textureAtlas, n, worldSize.x, worldSize.y, onScreenControls.input, camera));
+                actor, textureAtlas, n, worldSize.x, worldSize.y, onScreenControls.input, camera,
+                map.getWidth(), map.getHeight()));
     }
 
     @Override
     public void create()
     {
         super.create();
-
-        camera.zoom = 2.0f;
         
         for(int i = 0; i < playerCount; ++i)
         {

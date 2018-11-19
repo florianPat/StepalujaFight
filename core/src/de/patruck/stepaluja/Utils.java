@@ -60,10 +60,6 @@ public class Utils
         return counter.getAndIncrement();
     }
 
-    public static float lerp(float v0, float v1, float t) {
-        return (1 - t) * v0 + t * v1;
-    }
-
     public static DelegateFunction getDelegateFromFunction(Function function)
     {
         DelegateFunction result = new DelegateFunction(getGUID(), function);

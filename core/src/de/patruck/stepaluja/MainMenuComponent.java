@@ -18,8 +18,6 @@ class MainMenuComponent extends MenuComponent
                              GameStart screenManager)
     {
         super(viewport, worldSize, imgSize, screenManager);
-
-        resetBtns();
     }
 
     public void resetBtns()
