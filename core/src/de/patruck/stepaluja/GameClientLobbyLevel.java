@@ -7,8 +7,8 @@ import com.jmr.wrapper.common.listener.SocketListener;
 
 public class GameClientLobbyLevel extends LoadingLevel
 {
-    private class ClientListener implements SocketListener {
-
+    private class ClientListener implements SocketListener
+    {
         @Override
         public void received(Connection con, Object object) {
             Utils.log("Received: " + object);
@@ -34,7 +34,8 @@ public class GameClientLobbyLevel extends LoadingLevel
         super.render(dt);
     }
 
-    public GameClientLobbyLevel(String connAddressIn, GameStart screenManager, Vector2 worldSize) {
+    public GameClientLobbyLevel(String connAddressIn, GameStart screenManager, Vector2 worldSize)
+    {
         super(screenManager, worldSize);
 
         connAddress = connAddressIn;
@@ -43,14 +44,16 @@ public class GameClientLobbyLevel extends LoadingLevel
     }
 
     @Override
-    public void create() {
+    public void create()
+    {
         super.create();
 
         client = new Client(connAddress, 4395, 4395);
         client.setListener(new ClientListener());
         client.connect();
-        if (client.isConnected()) {
-            System.out.println("Connected to the server.");
+        if (client.isConnected())
+        {
+            Utils.log("Connected to the server.");
         }
     }
 }

@@ -7,4 +7,5 @@ eclipse.project {
 }
 dependencies {
     implementation files('../android/libs/JavaIpify.jar')
+    implementation files('../android/libs/NitroNet.jar')
 }

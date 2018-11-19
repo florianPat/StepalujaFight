@@ -5,6 +5,7 @@ import com.jmr.wrapper.common.Connection;
 import com.jmr.wrapper.common.exceptions.NNCantStartServer;
 import com.jmr.wrapper.common.listener.SocketListener;
 import com.jmr.wrapper.server.Server;
+
 import org.ipify.Ipify;
 
 import java.io.IOException;
@@ -47,28 +48,30 @@ public class GameServerLobbyLevel extends LoadingLevel
     {
         super.create();
 
+        String ipAddress = null;
+
+        try {
+            ipAddress = Ipify.getPublicIp(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Utils.invalidCodePath();
+        }
+
         try {
             server = new Server(4395, 4395);
+            server.setIpAddress(ipAddress);
             server.setListener(new ServerListener());
+            server.start();
 
             if (server.isConnected())
             {
                 Utils.log("Server started sucessfully!");
             }
-        }
-        catch (NNCantStartServer e)
-        {
-            Utils.log(e.getMessage());
+        } catch (NNCantStartServer nnCantStartServer) {
+            nnCantStartServer.printStackTrace();
         }
 
-        try
-        {
-            NativeBridge.registerNewServer(Ipify.getPublicIp(true));
-        }
-        catch (IOException e)
-        {
-            Utils.log(e.getMessage());
-        }
+        NativeBridge.registerNewServer(ipAddress);
     }
 
     @Override
