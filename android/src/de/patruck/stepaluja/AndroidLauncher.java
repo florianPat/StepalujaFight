@@ -20,7 +20,6 @@ public class AndroidLauncher extends AndroidApplication
 
 		System.loadLibrary("FirebaseGameInteractor");
 
-		// 853 : 480 for 16:9 aspect ratio. But we need a smart camera for that to work!
 		final Vector2 worldSize = new Vector2(900.0f, 600.0f);
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();

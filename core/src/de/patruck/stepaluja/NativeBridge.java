@@ -23,4 +23,20 @@ public class NativeBridge
 
     public native static void matchmakeWithRandom();
     public native static String resultMatchmakeWithRandom();
+
+    public native static void startClientListener();
+
+    public native static void stopClientListener();
+
+    public native static void updateClientListener();
+
+    public native static String getClientListenerResult();
+
+    public native static void registerClient(String ipAddress, String serverUid);
+
+    public native static int registerClientResult(String serverUid);
+
+    public native static void unregisterClient();
+
+    public native static int unregisterClientResult();
 }
