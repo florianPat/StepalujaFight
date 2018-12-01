@@ -7,6 +7,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Vector2;
 
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Utils
@@ -69,6 +72,43 @@ public class Utils
     public static Preferences getGlobalPreferences()
     {
         return Gdx.app.getPreferences("preferences");
+    }
+
+    private static boolean networkConnection()
+    {
+        boolean result = true;
+
+        DatagramSocket socket = null;
+        try
+        {
+            socket = new DatagramSocket();
+        }
+        catch(SocketException e)
+        {
+            e.printStackTrace();
+            Utils.invalidCodePath();
+        }
+        try
+        {
+            Utils.aassert(socket != null);
+            socket.connect(new InetSocketAddress("google.com", 80));
+        }
+        catch(Exception e)
+        {
+            result = false;
+        }
+        socket.disconnect();
+        socket.close();
+
+        return result;
+    }
+
+    public static void checkNetworkConnection(GameStart screenManager, Vector2 worldSize)
+    {
+        if(!networkConnection())
+        {
+            Utils.logBreak("No Network connection!", screenManager, worldSize);
+        }
     }
 }
 

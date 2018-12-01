@@ -36,10 +36,7 @@ public class GameStart extends Game
     public void create()
     {
         //NOTE: Set first level!
-        /*if(!NativeBridge.networkConnection())
-        {
-            Utils.logBreak("No Network connection!", this, worldSize);
-        }*/
+        Utils.checkNetworkConnection(this, worldSize);
 
         if(!googlePlayServicesAvailable)
         {
