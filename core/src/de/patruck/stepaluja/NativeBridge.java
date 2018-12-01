@@ -36,10 +36,10 @@ public class NativeBridge
     public native static int unregisterClientResult();
 
     public native static void userSignUpAnonymously();
-
     public native static int resultSignUpAnonymously();
 
     public native static void convertAnonymousToPermanentEmailAccount(String username, String password);
-
     public native static int resultConvertAnonymousToPermanentEmailAccount();
+
+    public native static boolean isCurrentUserAnonymous();
 }

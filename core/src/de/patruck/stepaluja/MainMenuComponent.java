@@ -1,5 +1,7 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -8,6 +10,9 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 class MainMenuComponent extends MenuComponent
 {
     private Rectangle btns[] = new Rectangle[4];
+    private Rectangle convertAnToPerBtn;
+    private boolean isAnonymous;
+    private BitmapFont font;
 
     // private Rectangle playBtn;
     // private Rectangle partyBtn;
@@ -15,9 +20,12 @@ class MainMenuComponent extends MenuComponent
     // private Rectangle creditsBtn;
 
     public MainMenuComponent(ExtendViewport viewport, Vector2 worldSize, Vector2 imgSize,
-                             GameStart screenManager)
+                             GameStart screenManager, SpriteBatch spriteBatchIn)
     {
-        super(viewport, worldSize, imgSize, screenManager);
+        super(viewport, worldSize, imgSize, screenManager, spriteBatchIn);
+
+        isAnonymous = NativeBridge.isCurrentUserAnonymous();
+        font = Utils.getFont();
     }
 
     public void resetBtns()
@@ -30,6 +38,11 @@ class MainMenuComponent extends MenuComponent
         btns[1] = new Rectangle(btnX, btns[0].y - btnHeight, btnWidth, btnHeight);
         btns[2] = new Rectangle(btnX, btns[1].y - btnHeight, btnWidth, btnHeight);
         btns[3] = new Rectangle(btnX, btns[2].y - btnHeight, btnWidth, btnHeight);
+
+        if(isAnonymous)
+        {
+            convertAnToPerBtn = new Rectangle(0.0f, 0.0f, btnWidth, btnHeight);
+        }
     }
 
     @Override
@@ -56,6 +69,12 @@ class MainMenuComponent extends MenuComponent
 
             btn.setPosition(localSpacePos);
         }
+
+        if(isAnonymous)
+        {
+            convertAnToPerBtn.setWidth(convertAnToPerBtn.getWidth() * scaleX);
+            convertAnToPerBtn.setHeight(convertAnToPerBtn.getHeight() * scaleY);
+        }
     }
 
     @Override
@@ -69,7 +88,31 @@ class MainMenuComponent extends MenuComponent
         {
             renderer.rect(btn.getX(), btn.getY(), btn.getWidth(), btn.getHeight());
         }
+
+        if(isAnonymous)
+        {
+            renderer.rect(convertAnToPerBtn.getX(), convertAnToPerBtn.getY(), convertAnToPerBtn.getWidth(),
+                    convertAnToPerBtn.getHeight());
+        }
+
         renderer.end();
+    }
+
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+
+        font.dispose();
+    }
+
+    @Override
+    public void render()
+    {
+        if(isAnonymous)
+        {
+            font.draw(spriteBatch, "Make a real account here!!", 0.0f, font.getLineHeight());
+        }
     }
 
     @Override
@@ -94,6 +137,14 @@ class MainMenuComponent extends MenuComponent
         {
             screenManager.setScreen(new MenuLevel("menu/Mitwirkende.jpg", screenManager,
                     worldSize, MenuLevel.LevelComponentName.CreditsMenu));
+        }
+
+        if(isAnonymous)
+        {
+            if(convertAnToPerBtn.contains(viewportPosition))
+            {
+                screenManager.setScreen(new SignUpLevel(screenManager, worldSize));
+            }
         }
 
         return super.touchUp(screenX, screenY, pointer, button);

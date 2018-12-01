@@ -44,13 +44,13 @@ public class MenuLevel extends Level
             case MainMenu:
             {
                 menuComponent = new MainMenuComponent(viewport, worldSize,
-                        new Vector2(menuSprite.getWidth(), menuSprite.getHeight()), screenManager);
+                        new Vector2(menuSprite.getWidth(), menuSprite.getHeight()), screenManager, spriteBatch);
                 break;
             }
             case CreditsMenu:
             {
                 menuComponent = new CreditsMenuComponent(viewport, worldSize,
-                        new Vector2(menuSprite.getWidth(), menuSprite.getHeight()), screenManager);
+                        new Vector2(menuSprite.getWidth(), menuSprite.getHeight()), screenManager, spriteBatch);
                 break;
             }
             default:
@@ -74,6 +74,7 @@ public class MenuLevel extends Level
         spriteBatch.begin();
 
         menuSprite.draw(spriteBatch);
+        menuComponent.render();
 
         spriteBatch.end();
 

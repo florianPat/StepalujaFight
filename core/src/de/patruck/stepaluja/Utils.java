@@ -33,6 +33,11 @@ public class Utils
         screenManager.setScreen(new ErrorLevel(screenManager, worldSize, msg));
     }
 
+    public static BitmapFont getFont()
+    {
+        return getFont(33);
+    }
+
     public static BitmapFont getFont(int fontSize)
     {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/framd.ttf"));

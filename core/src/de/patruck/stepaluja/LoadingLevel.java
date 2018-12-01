@@ -31,7 +31,7 @@ public class LoadingLevel extends Level
 
         menuSprite = new Sprite(menuTex);
 
-        font = Utils.getFont(33);
+        font = Utils.getFont();
     }
 
     @Override

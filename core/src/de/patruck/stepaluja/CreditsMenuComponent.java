@@ -1,5 +1,6 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -10,9 +11,9 @@ class CreditsMenuComponent extends MenuComponent
     private Rectangle backBtn;
 
     public CreditsMenuComponent(ExtendViewport viewport, Vector2 worldSize, Vector2 imgSize,
-                                GameStart screenManager)
+                                GameStart screenManager, SpriteBatch spriteBatch)
     {
-        super(viewport, worldSize, imgSize, screenManager);
+        super(viewport, worldSize, imgSize, screenManager, spriteBatch);
     }
 
     public void resetBtns()

@@ -23,7 +23,8 @@ public class GameStart extends Game
         if(!prefs.contains("username"))
         {
             Utils.log("create new user!");
-            setScreen(new SignUpLevel(this, worldSize));
+            //setScreen(new SignUpLevel(this, worldSize));
+            setScreen(new SignUpAnonymouslyLevel(this, worldSize));
         }
         else
         {
