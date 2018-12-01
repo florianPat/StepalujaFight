@@ -25,18 +25,21 @@ public class NativeBridge
     public native static String resultMatchmakeWithRandom();
 
     public native static void startClientListener();
-
     public native static void stopClientListener();
-
     public native static void updateClientListener();
-
     public native static String getClientListenerResult();
 
     public native static void registerClient(String ipAddress, String serverUid);
-
     public native static int registerClientResult(String serverUid);
 
     public native static void unregisterClient();
-
     public native static int unregisterClientResult();
+
+    public native static void userSignUpAnonymously();
+
+    public native static int resultSignUpAnonymously();
+
+    public native static void convertAnonymousToPermanentEmailAccount(String username, String password);
+
+    public native static int resultConvertAnonymousToPermanentEmailAccount();
 }

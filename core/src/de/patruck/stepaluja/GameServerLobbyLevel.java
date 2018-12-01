@@ -2,9 +2,10 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.math.Vector2;
 
-import org.ipify.Ipify;
-
 import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 public class GameServerLobbyLevel extends LoadingLevel
 {
@@ -30,21 +31,48 @@ public class GameServerLobbyLevel extends LoadingLevel
         showingUpInDB = false;
         isClientConnecting = false;
 
-        String ipAddress = null;
+        String ipAddress;
+        String localIpAddress;
 
+//        try
+//        {
+//            ipAddress = Ipify.getPublicIp(true);
+//        }
+//        catch(IOException e)
+//        {
+//            e.printStackTrace();
+//            Utils.invalidCodePath();
+//        }
+
+        DatagramSocket socket = null;
         try
         {
-            ipAddress = Ipify.getPublicIp(true);
+            socket = new DatagramSocket();
+        }
+        catch(SocketException e)
+        {
+            e.printStackTrace();
+            Utils.invalidCodePath();
+        }
+        try
+        {
+            Utils.aassert(socket != null);
+            socket.connect(new InetSocketAddress("google.com", 80));
         }
         catch(IOException e)
         {
             e.printStackTrace();
             Utils.invalidCodePath();
         }
+        ipAddress = socket.getInetAddress().getHostAddress();
+        localIpAddress = socket.getLocalAddress().getHostAddress();
+        socket.disconnect();
+        socket.close();
+        socket = null;
 
         //TODO: Start server!
 
-        NativeBridge.registerNewServer(ipAddress);
+        NativeBridge.registerNewServer(ipAddress + "__" + localIpAddress);
     }
 
     @Override
