@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class AnimationComponent extends Component {
 
-    public static final int ID = Utils.getGUID();
+    public static final int id = Utils.getGUID();
 
     protected Array<Texture> atlas;
     protected HashMap<String, Animation<Texture>> animation;
@@ -23,7 +23,7 @@ public class AnimationComponent extends Component {
     protected Texture current;
 
     public AnimationComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas) {
-        super(ID, eventManager, assetManager, spriteBatch, physics, owner);
+        super(id, eventManager, assetManager, spriteBatch, physics, owner);
 
         //Load textures
         for(int i = 0; i < textureAtlas.length; ++i)

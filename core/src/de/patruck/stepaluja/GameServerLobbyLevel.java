@@ -11,8 +11,8 @@ public class GameServerLobbyLevel extends LoadingLevel
 {
     private boolean showingUpInDB;
     //NOTE: Was intended for threading, but we do not need it anymore!
-    private static Object lock;
-    private long threadPointer = 0;
+//    private static Object lock;
+//    private long threadPointer = 0;
     private static boolean isClientConnecting;
     private String clientIpAddress = null;
 

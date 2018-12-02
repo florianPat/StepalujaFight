@@ -46,6 +46,8 @@ public class TileMapLevel extends Level
         spriteBatch.end();
 
         onScreenControls.render();
+
+        onScreenControls.updateJustTouched();
     }
 
     @Override

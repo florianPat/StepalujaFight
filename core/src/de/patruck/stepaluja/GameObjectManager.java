@@ -64,13 +64,13 @@ public class GameObjectManager
         }
     }
 
-    private int getActorId(long id)
-    {
-        return (int)(id >> 32l);
-    }
-
-    private int getComponentId(long id)
-    {
-        return (int)(id & 0xffffffffl);
-    }
+//    private int getActorId(long id)
+//    {
+//        return (int)(id >> 32l);
+//    }
+//
+//    private int getComponentId(long id)
+//    {
+//        return (int)(id & 0xffffffffl);
+//    }
 }

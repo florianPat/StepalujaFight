@@ -44,5 +44,14 @@ public class Actor
         components.remove(componentId);
     }
 
-    public int getId() { return id; };
+    public Component getComponent(int componentId)
+    {
+        Utils.aassert(components.containsKey(componentId));
+        return components.get(componentId);
+    }
+
+    public int getId()
+    {
+        return id;
+    }
 }

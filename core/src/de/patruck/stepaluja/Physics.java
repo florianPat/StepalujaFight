@@ -21,7 +21,7 @@ public class Physics
         SHOES,
         LEFT,
         RIGHT
-    };
+    }
 
     public final float gravity = -152.2f;
     private HashMap<String, Body> bodies;
@@ -78,39 +78,42 @@ public class Physics
         for (Iterator<Body> iterator = bodies.values().iterator(); iterator.hasNext();)
         {
             Body it = iterator.next();
-            if (it.isActive && (!it.isStatic))
+            if(!it.isStatic)
             {
                 it.triggered = false;
                 it.triggerInformation.triggerElementCollision = "";
                 it.triggerInformation.triggerBodyPart = TriggerBodyPart.NONE;
 
-                for (String collisionIdIt : it.physicsElments.get(0).collisionIds)
+                if(it.isActive)
                 {
-                    Body collideElementIt = bodies.get(collisionIdIt);
-                    Utils.aassert(collideElementIt != null);
-                    if (collideElementIt.getIsActive())
+                    for(String collisionIdIt : it.physicsElments.get(0).collisionIds)
                     {
-                        Body collideElementBody = collideElementIt;
-                        Body itBody = it;
-
-                        Collider bodyRect = itBody.physicsElments.get(0).collider;
-
-                        Collider elementRect = collideElementBody.physicsElments.get(0).collider;
-                        if (collideElementBody.isStatic)
+                        Body collideElementIt = bodies.get(collisionIdIt);
+                        Utils.aassert(collideElementIt != null);
+                        if(collideElementIt.getIsActive())
                         {
-                            for (PhysicsElement collideElementPhysicsElementIt : collideElementBody.physicsElments)
+                            Body collideElementBody = collideElementIt;
+                            Body itBody = it;
+
+                            Collider bodyRect = itBody.physicsElments.get(0).collider;
+
+                            Collider elementRect = collideElementBody.physicsElments.get(0).collider;
+                            if(collideElementBody.isStatic)
                             {
-                                elementRect = collideElementPhysicsElementIt.collider;
+                                for(PhysicsElement collideElementPhysicsElementIt : collideElementBody.physicsElments)
+                                {
+                                    elementRect = collideElementPhysicsElementIt.collider;
 
-                                handleCollision(itBody, collideElementBody, bodyRect, elementRect);
+                                    handleCollision(itBody, collideElementBody, bodyRect, elementRect);
+                                }
                             }
+                            else
+                                handleCollision(itBody, collideElementBody, bodyRect, elementRect);
                         }
-                        else
-                            handleCollision(itBody, collideElementBody, bodyRect, elementRect);
                     }
-                }
 
-                it.pos.add(it.vel.scl(dt));
+                    it.pos.add(it.vel.scl(dt));
+                }
             }
         }
     }
@@ -198,6 +201,8 @@ public class Physics
         boundingBox.unionCollider.rect.y = sprite.getY();
         boundingBox.unionCollider.rect.width = sprite.getWidth();
         boundingBox.unionCollider.rect.height = sprite.getHeight();
+
+        boundingBox.updateRectCollider();
     }
 
     public static void applySpriteToBoundingBox(Texture texture, Collider boundingBox, Vector2 pos)
@@ -208,6 +213,8 @@ public class Physics
         boundingBox.unionCollider.rect.y = pos.y;
         boundingBox.unionCollider.rect.width = texture.getWidth();
         boundingBox.unionCollider.rect.height = texture.getHeight();
+
+        boundingBox.updateRectCollider();
     }
 
     ArrayList<String> getAllCollisionIdsWhichContain(String string)

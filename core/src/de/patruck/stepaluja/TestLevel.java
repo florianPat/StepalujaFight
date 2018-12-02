@@ -6,10 +6,23 @@ public class TestLevel extends TileMapLevel
 {
     private final int playerCount = 2;
     private Function deadFlaggedFunction;
+    private HeartComponent[] heartComponents;
 
     public TestLevel(GameStart screenManager, Vector2 worldSize)
     {
         super("maps/map2.txt", screenManager, worldSize);
+    }
+
+    @Override
+    public void resize(int width, int height)
+    {
+        super.resize(width, height);
+
+        for(HeartComponent hc : heartComponents)
+        {
+            hc.viewport.update(width, height, true);
+            hc.recalculateHeartPos();
+        }
     }
 
     private void createPlayer(String playerName, int n)
@@ -20,16 +33,19 @@ public class TestLevel extends TileMapLevel
             textureAtlas[i] = playerName + "/" + (i+1) + ".png";
         }
         Actor actor = gom.addActor();
+        heartComponents[n] = new HeartComponent(assetManager, spriteBatch, n);
         actor.addComponent(new PlayerComponent(eventManager, assetManager, spriteBatch, physics,
                 actor, textureAtlas, n, worldSize.x, worldSize.y, onScreenControls.input, camera,
-                map.getWidth(), map.getHeight()));
+                map.getWidth(), map.getHeight(), heartComponents[n]));
     }
 
     @Override
     public void create()
     {
         super.create();
-        
+
+        heartComponents = new HeartComponent[playerCount];
+
         for(int i = 0; i < playerCount; ++i)
         {
             createPlayer("player1", i);
@@ -49,5 +65,16 @@ public class TestLevel extends TileMapLevel
         };
 
         eventManager.addListener(DeadEventData.eventId, Utils.getDelegateFromFunction(deadFlaggedFunction));
+    }
+
+    @Override
+    public void render(float dt)
+    {
+        super.render(dt);
+
+        for(HeartComponent hc : heartComponents)
+        {
+            hc.draw();
+        }
     }
 }
