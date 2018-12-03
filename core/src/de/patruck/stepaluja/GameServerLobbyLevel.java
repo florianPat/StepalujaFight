@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ public class GameServerLobbyLevel extends LoadingLevel
     private ByteBuffer readBuffer;
     private ByteBuffer writeBuffer;
     private float packetInterval = 0.0f;
-    public static final float maxPacketInterval = 2.0f;
+    public static final float maxPacketInterval = 0.75f;
 
     public GameServerLobbyLevel(GameStart screenManager, Vector2 worldSize)
     {
@@ -43,6 +44,203 @@ public class GameServerLobbyLevel extends LoadingLevel
         bufferBytes = new byte[256];
     }
 
+    public static IpPortAddress getAddressesAndCreateChannelAsWellAsSelector()
+    {
+        IpPortAddress result = new IpPortAddress();
+
+        try
+        {
+            result.channel = DatagramChannel.open();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        Utils.aassert(result.channel != null);
+        DatagramSocket socket = result.channel.socket();
+        try
+        {
+            Utils.aassert(socket != null);
+            socket.connect(new InetSocketAddress("google.com", localPort));
+        }
+        catch(Exception e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        result.ipAddress = socket.getInetAddress().getHostAddress();
+        result.port = socket.getPort();
+        result.localIpAddress = socket.getLocalAddress().getHostAddress();
+        result.localPortHere = socket.getLocalPort();
+        socket.disconnect();
+        socket.close();
+        try
+        {
+            result.channel.close();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        try
+        {
+            result.channel = DatagramChannel.open();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        Utils.aassert(result.channel != null);
+        socket = result.channel.socket();
+        try
+        {
+            socket.bind(new InetSocketAddress(result.localIpAddress, localPort));
+        }
+        catch(Exception e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        Utils.aassert(socket.isBound());
+        try
+        {
+            result.channel.configureBlocking(false);
+        }
+        catch(Exception e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        Utils.aassert(!result.channel.isBlocking());
+
+        try
+        {
+            result.selector = Selector.open();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        Utils.aassert(result.selector != null);
+        try
+        {
+            result.channel.register(result.selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+        }
+        catch(Exception e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+
+        return result;
+    }
+
+    public static float select(Selector selector, ByteBuffer readBuffer, ByteBuffer writeBuffer,
+                               byte[] bufferBytes, float packetInterval, String toIp, int toPort, float dt)
+    {
+        int nToSelect = 0;
+        try
+        {
+            nToSelect = selector.selectNow();
+        }
+        catch(Exception e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+
+        if(nToSelect > 0)
+        {
+            Set<SelectionKey> selectionKeySet = selector.selectedKeys();
+
+            for(Iterator<SelectionKey> iterator = selectionKeySet.iterator(); iterator.hasNext(); )
+            {
+                SelectionKey it = iterator.next();
+
+                if(it.isReadable())
+                {
+                    readBuffer.clear();
+
+                    //NOTE: The channel really has to be the channel of the class, because we just
+                    //registered one!
+                    DatagramChannel channel = (DatagramChannel) it.channel();
+
+                    InetSocketAddress address = null;
+                    try
+                    {
+                        address = (InetSocketAddress) channel.receive(readBuffer);
+                    }
+                    catch(Exception e)
+                    {
+                        Utils.log(e.getMessage());
+                        Utils.invalidCodePath();
+                    }
+                    Utils.aassert(address != null);
+
+                    int remaing = readBuffer.remaining();
+                    if(remaing > 0)
+                    {
+                        Utils.log("Received a packet from:" + address.getHostName());
+
+                        readBuffer.get(bufferBytes, 0, remaing);
+                        Utils.log(Arrays.toString(bufferBytes));
+                    }
+                }
+                if(it.isWritable())
+                {
+                    if(packetInterval == 0.0f)
+                    {
+                        writeBuffer.clear();
+
+                        //NOTE: The channel really has to be the channel of the class, because we just
+                        //registered one!
+                        DatagramChannel channel = (DatagramChannel) it.channel();
+
+                        InetAddress inetAddress = null;
+                        try
+                        {
+                            inetAddress = InetAddress.getByName(toIp);
+                        }
+                        catch(Exception e)
+                        {
+                            Utils.log(e.getMessage());
+                            Utils.invalidCodePath();
+                        }
+                        Utils.aassert(inetAddress != null);
+                        InetSocketAddress socketAddress = new InetSocketAddress(inetAddress, toPort);
+
+                        writeBuffer.put("HELO".getBytes());
+
+                        try
+                        {
+                            channel.send(writeBuffer, socketAddress);
+                        }
+                        catch(Exception e)
+                        {
+                            Utils.log(e.getMessage());
+                            Utils.invalidCodePath();
+                        }
+
+                        Utils.log("We send a msg!");
+                    }
+
+                    packetInterval += dt;
+
+                    if(packetInterval >= maxPacketInterval)
+                        packetInterval = 0.0f;
+                }
+
+                iterator.remove();
+            }
+        }
+
+        return packetInterval;
+    }
+
     @Override
     public void create()
     {
@@ -52,110 +250,22 @@ public class GameServerLobbyLevel extends LoadingLevel
         isClientConnecting = false;
 
         //TODO: Think about not getting the address every time, just once on startup!
-        String ipAddress;
-        int port;
-        String localIpAddress;
-        int localPortHere;
-
 //        try
 //        {
 //            ipAddress = Ipify.getPublicIp(true);
 //        }
 //        catch(IOException e)
 //        {
-//            e.printStackTrace();
+//            Utils.log(e.getMessage());
 //            Utils.invalidCodePath();
 //        }
 
-        try
-        {
-            channel = DatagramChannel.open();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        Utils.aassert(channel != null);
-        DatagramSocket socket = channel.socket();
-        try
-        {
-            Utils.aassert(socket != null);
-            socket.connect(new InetSocketAddress("google.com", localPort));
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        ipAddress = socket.getInetAddress().getHostAddress();
-        port = socket.getPort();
-        localIpAddress = socket.getLocalAddress().getHostAddress();
-        localPortHere = socket.getLocalPort();
-        socket.disconnect();
-        socket.close();
-        try
-        {
-            channel.close();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        try
-        {
-            channel = DatagramChannel.open();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        Utils.aassert(channel != null);
-        socket = channel.socket();
-        try
-        {
-            socket.bind(new InetSocketAddress(localIpAddress, localPort));
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        Utils.aassert(socket.isBound());
-        try
-        {
-            channel.configureBlocking(false);
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        Utils.aassert(!channel.isBlocking());
+        IpPortAddress ipPortAddress = getAddressesAndCreateChannelAsWellAsSelector();
+        channel = ipPortAddress.channel;
+        selector = ipPortAddress.selector;
 
-        try
-        {
-            selector = Selector.open();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        Utils.aassert(selector != null);
-        try
-        {
-            channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-
-        NativeBridge.registerNewServer(ipAddress + "_" + port + "-" + localIpAddress);
+        NativeBridge.registerNewServer(ipPortAddress.ipAddress + "_" + ipPortAddress.port + "-"
+                + ipPortAddress.localIpAddress);
     }
 
     @Override
@@ -216,82 +326,8 @@ public class GameServerLobbyLevel extends LoadingLevel
         }
         else
         {
-            int nToSelect = 0;
-            Utils.log("Now its communicating time!");
-            try
-            {
-                nToSelect = selector.selectNow();
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-                Utils.invalidCodePath();
-            }
-
-            if(nToSelect > 0)
-            {
-                Set<SelectionKey> selectionKeySet = selector.selectedKeys();
-
-                for(Iterator<SelectionKey> iterator = selectionKeySet.iterator(); iterator.hasNext(); )
-                {
-                    SelectionKey it = iterator.next();
-
-                    if(it.isReadable())
-                    {
-                        //NOTE: The channel really has to be the channel of the class, because we just
-                        //registered one!
-                        DatagramChannel channel = (DatagramChannel) it.channel();
-
-                        InetSocketAddress address = null;
-                        try
-                        {
-                            address = (InetSocketAddress) channel.receive(readBuffer);
-                        }
-                        catch(Exception e)
-                        {
-                            e.printStackTrace();
-                            Utils.invalidCodePath();
-                        }
-                        Utils.aassert(address != null);
-
-                        Utils.log("Received a packet from:" + address.getHostName());
-
-                        readBuffer.get(bufferBytes);
-                    }
-                    if(it.isWritable())
-                    {
-                        //NOTE: The channel really has to be the channel of the class, because we just
-                        //registered one!
-                        DatagramChannel channel = (DatagramChannel) it.channel();
-
-                        InetAddress inetAddress = null;
-                        try
-                        {
-                            inetAddress = InetAddress.getByName(clientLocalIp);
-                        }
-                        catch(Exception e)
-                        {
-                            e.printStackTrace();
-                            Utils.invalidCodePath();
-                        }
-                        Utils.aassert(inetAddress != null);
-                        InetSocketAddress socketAddress = new InetSocketAddress(inetAddress, localPort);
-                        try
-                        {
-                            channel.send(writeBuffer, socketAddress);
-                        }
-                        catch(Exception e)
-                        {
-                            e.printStackTrace();
-                            Utils.invalidCodePath();
-                        }
-
-                        Utils.log("We send a msg!");
-                    }
-
-                    iterator.remove();
-                }
-            }
+            packetInterval = select(selector, readBuffer, writeBuffer, bufferBytes, packetInterval, clientLocalIp,
+                    Integer.valueOf(clientExternalPort), dt);
         }
     }
 
@@ -377,7 +413,7 @@ public class GameServerLobbyLevel extends LoadingLevel
         }
         catch(IOException e)
         {
-            e.printStackTrace();
+            Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
         try
@@ -386,7 +422,7 @@ public class GameServerLobbyLevel extends LoadingLevel
         }
         catch(IOException e)
         {
-            e.printStackTrace();
+            Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
     }

@@ -100,7 +100,7 @@ public class Tilemap {
         }
         catch(IOException e)
         {
-            Utils.log("Failed to init map!");
+            Utils.log(e.getMessage());
             Utils.invalidCodePath();
             //erstelleKarte();
         }

@@ -3,18 +3,23 @@ package de.patruck.stepaluja;
 import com.badlogic.gdx.math.Vector2;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.Selector;
 
 public class GameClientLobbyLevel extends LoadingLevel
 {
     private String realConnAddress;
     private String serverUid;
     private boolean showingUpInDB = false;
-    private String clientExternalIp = null;
-    private String clientExternalPort = null;
-    private String clientLocalIp = null;
+    private String clientExternalIp;
+    private String clientExternalPort;
+    private String clientLocalIp;
+    private DatagramChannel channel = null;
+    private Selector selector = null;
+    byte[] bufferBytes;
+    private ByteBuffer readBuffer;
+    private ByteBuffer writeBuffer;
     private float packetInterval = 0.0f;
 
     public GameClientLobbyLevel(String connAddress, GameStart screenManager, Vector2 worldSize)
@@ -34,6 +39,10 @@ public class GameClientLobbyLevel extends LoadingLevel
         clientExternalPort = realConnAddress.substring(posUnderscore + 1, posPipe);
         clientLocalIp = realConnAddress.substring(posPipe + 1);
 
+        readBuffer = ByteBuffer.allocate(256);
+        writeBuffer = ByteBuffer.allocate(256);
+        bufferBytes = new byte[256];
+
         msg = "Server found! Lets connect to it!";
     }
 
@@ -42,49 +51,12 @@ public class GameClientLobbyLevel extends LoadingLevel
     {
         super.create();
 
-        String ipAddress;
-        int port;
-        String localIpAddress;
-        int localPortHere;
+        IpPortAddress ipPortAddress = GameServerLobbyLevel.getAddressesAndCreateChannelAsWellAsSelector();
+        channel = ipPortAddress.channel;
+        selector = ipPortAddress.selector;
 
-//        try
-//        {
-//            ipAddress = Ipify.getPublicIp(true);
-//        }
-//        catch(IOException e)
-//        {
-//            e.printStackTrace();
-//            Utils.invalidCodePath();
-//        }
-
-        DatagramSocket socket = null;
-        try
-        {
-            socket = new DatagramSocket();
-        }
-        catch(SocketException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        try
-        {
-            Utils.aassert(socket != null);
-            socket.connect(new InetSocketAddress("google.com", GameServerLobbyLevel.localPort));
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        ipAddress = socket.getInetAddress().getHostAddress();
-        port = socket.getPort();
-        localIpAddress = socket.getLocalAddress().getHostAddress();
-        localPortHere = socket.getLocalPort();
-        socket.disconnect();
-        socket.close();
-
-        NativeBridge.registerClient(ipAddress + "_" + port + "-" + localIpAddress, serverUid);
+        NativeBridge.registerClient(ipPortAddress.ipAddress + "_" + ipPortAddress.port + "-" +
+                ipPortAddress.localIpAddress, serverUid);
     }
 
     @Override
@@ -120,7 +92,45 @@ public class GameClientLobbyLevel extends LoadingLevel
         }
         else
         {
-            Utils.log("Now its communicating time!");
+            packetInterval = GameServerLobbyLevel.select(selector, readBuffer, writeBuffer, bufferBytes,
+                    packetInterval, clientLocalIp, Integer.valueOf(clientExternalPort), dt);
+        }
+    }
+
+    @Override
+    public void resume()
+    {
+        super.resume();
+
+        IpPortAddress ipPortAddress = GameServerLobbyLevel.getAddressesAndCreateChannelAsWellAsSelector();
+        channel = ipPortAddress.channel;
+        selector = ipPortAddress.selector;
+    }
+
+    @Override
+    public void pause()
+    {
+        super.pause();
+
+        //TODO: Unregister client here, should we?
+
+        try
+        {
+            channel.close();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        try
+        {
+            selector.close();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
         }
     }
 }

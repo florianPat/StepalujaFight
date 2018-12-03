@@ -90,7 +90,7 @@ public class Utils
         }
         catch(SocketException e)
         {
-            e.printStackTrace();
+            Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
         try
