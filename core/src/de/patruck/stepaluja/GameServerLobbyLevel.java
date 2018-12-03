@@ -14,7 +14,12 @@ public class GameServerLobbyLevel extends LoadingLevel
 //    private static Object lock;
 //    private long threadPointer = 0;
     private static boolean isClientConnecting;
-    private String clientIpAddress = null;
+    public static final int localPort = 54777;
+    private String clientExternalIp = null;
+    private String clientExternalPort = null;
+    private String clientLocalIp = null;
+    private float packetInterval = 0.0f;
+    public static final float maxPacketInterval = 2.0f;
 
     public GameServerLobbyLevel(GameStart screenManager, Vector2 worldSize)
     {
@@ -32,7 +37,9 @@ public class GameServerLobbyLevel extends LoadingLevel
         isClientConnecting = false;
 
         String ipAddress;
+        int port;
         String localIpAddress;
+        int localPortHere;
 
 //        try
 //        {
@@ -57,7 +64,7 @@ public class GameServerLobbyLevel extends LoadingLevel
         try
         {
             Utils.aassert(socket != null);
-            socket.connect(new InetSocketAddress("google.com", 80));
+            socket.connect(new InetSocketAddress("google.com", localPort));
         }
         catch(IOException e)
         {
@@ -65,14 +72,13 @@ public class GameServerLobbyLevel extends LoadingLevel
             Utils.invalidCodePath();
         }
         ipAddress = socket.getInetAddress().getHostAddress();
+        port = socket.getPort();
         localIpAddress = socket.getLocalAddress().getHostAddress();
+        localPortHere = socket.getLocalPort();
         socket.disconnect();
         socket.close();
-        socket = null;
 
-        //TODO: Start server!
-
-        NativeBridge.registerNewServer(ipAddress + "__" + localIpAddress);
+        NativeBridge.registerNewServer(ipAddress + "_" + port + "-" + localIpAddress);
     }
 
     @Override
@@ -80,7 +86,7 @@ public class GameServerLobbyLevel extends LoadingLevel
     {
         super.render(dt);
 
-        if(clientIpAddress == null)
+        if(clientLocalIp == null)
         {
             if(!showingUpInDB && (!isClientConnecting))
             {
@@ -116,15 +122,24 @@ public class GameServerLobbyLevel extends LoadingLevel
             else if(showingUpInDB)
             {
                 Utils.log("Client is connecting!");
-                clientIpAddress = NativeBridge.getClientListenerResult();
+                String clientIpAddress = NativeBridge.getClientListenerResult();
+                Utils.log(clientIpAddress);
                 unregisterDBAndListener();
                 Utils.aassert(isClientConnecting == false);
+
+                int posUnderscore = clientIpAddress.indexOf('_');
+                int posPipe = clientIpAddress.indexOf('-');
+
+                clientExternalIp = clientIpAddress.substring(0, posUnderscore);
+                clientExternalPort = clientIpAddress.substring(posUnderscore + 1, posPipe);
+                clientLocalIp = clientIpAddress.substring(posPipe + 1);
+
+                msg = "Client found! Lets connect to it!";
             }
         }
         else
         {
-            Utils.log(clientIpAddress);
-            msg = "Client found! Lets connect to it!";
+            Utils.log("Now its communicating time!");
         }
     }
 

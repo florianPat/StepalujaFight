@@ -12,6 +12,80 @@ public class GameClientLobbyLevel extends LoadingLevel
     private String realConnAddress;
     private String serverUid;
     private boolean showingUpInDB = false;
+    private String clientExternalIp = null;
+    private String clientExternalPort = null;
+    private String clientLocalIp = null;
+    private float packetInterval = 0.0f;
+
+    public GameClientLobbyLevel(String connAddress, GameStart screenManager, Vector2 worldSize)
+    {
+        super(screenManager, worldSize);
+
+        final int nPipes = 3;
+
+        int indexOfFirstPipe = connAddress.indexOf('|');
+        realConnAddress = connAddress.substring(0, indexOfFirstPipe);
+        serverUid = connAddress.substring(indexOfFirstPipe + nPipes);
+
+        int posUnderscore = realConnAddress.indexOf('_');
+        int posPipe = realConnAddress.indexOf('-');
+
+        clientExternalIp = realConnAddress.substring(0, posUnderscore);
+        clientExternalPort = realConnAddress.substring(posUnderscore + 1, posPipe);
+        clientLocalIp = realConnAddress.substring(posPipe + 1);
+
+        msg = "Server found! Lets connect to it!";
+    }
+
+    @Override
+    public void create()
+    {
+        super.create();
+
+        String ipAddress;
+        int port;
+        String localIpAddress;
+        int localPortHere;
+
+//        try
+//        {
+//            ipAddress = Ipify.getPublicIp(true);
+//        }
+//        catch(IOException e)
+//        {
+//            e.printStackTrace();
+//            Utils.invalidCodePath();
+//        }
+
+        DatagramSocket socket = null;
+        try
+        {
+            socket = new DatagramSocket();
+        }
+        catch(SocketException e)
+        {
+            e.printStackTrace();
+            Utils.invalidCodePath();
+        }
+        try
+        {
+            Utils.aassert(socket != null);
+            socket.connect(new InetSocketAddress("google.com", GameServerLobbyLevel.localPort));
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+            Utils.invalidCodePath();
+        }
+        ipAddress = socket.getInetAddress().getHostAddress();
+        port = socket.getPort();
+        localIpAddress = socket.getLocalAddress().getHostAddress();
+        localPortHere = socket.getLocalPort();
+        socket.disconnect();
+        socket.close();
+
+        NativeBridge.registerClient(ipAddress + "_" + port + "-" + localIpAddress, serverUid);
+    }
 
     @Override
     public void render(float dt)
@@ -46,57 +120,7 @@ public class GameClientLobbyLevel extends LoadingLevel
         }
         else
         {
-            Utils.log("Lets connect!");
+            Utils.log("Now its communicating time!");
         }
-    }
-
-    public GameClientLobbyLevel(String connAddress, GameStart screenManager, Vector2 worldSize)
-    {
-        super(screenManager, worldSize);
-
-        final int nPipes = 3;
-
-        int indexOfFirstPipe = connAddress.indexOf('|');
-        realConnAddress = connAddress.substring(0, indexOfFirstPipe);
-        serverUid = connAddress.substring(indexOfFirstPipe + nPipes);
-
-        msg = "Server found! Lets connect to it!";
-    }
-
-    @Override
-    public void create()
-    {
-        super.create();
-
-        String ipAddress;
-        String localIpAddress;
-
-        DatagramSocket socket = null;
-        try
-        {
-            socket = new DatagramSocket();
-        }
-        catch(SocketException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        try
-        {
-            Utils.aassert(socket != null);
-            socket.connect(new InetSocketAddress("google.com", 80));
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-            Utils.invalidCodePath();
-        }
-        ipAddress = socket.getInetAddress().getHostAddress();
-        localIpAddress = socket.getLocalAddress().getHostAddress();
-        socket.disconnect();
-        socket.close();
-        socket = null;
-
-        NativeBridge.registerClient(ipAddress + "__" + localIpAddress, serverUid);
     }
 }
