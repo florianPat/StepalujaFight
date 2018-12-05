@@ -2,6 +2,8 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.math.Vector2;
 
+import org.ipify.Ipify;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -69,7 +71,7 @@ public class GameServerLobbyLevel extends LoadingLevel
             Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
-        result.ipAddress = socket.getInetAddress().getHostAddress();
+        //result.ipAddress = socket.getInetAddress().getHostAddress();
         result.port = socket.getPort();
         result.localIpAddress = socket.getLocalAddress().getHostAddress();
         result.localPortHere = socket.getLocalPort();
@@ -84,6 +86,17 @@ public class GameServerLobbyLevel extends LoadingLevel
             Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
+        try
+        {
+            result.ipAddress = Ipify.getPublicIp(true);
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        Utils.aassert(result.ipAddress != null);
+
         try
         {
             result.channel = DatagramChannel.open();
@@ -214,6 +227,7 @@ public class GameServerLobbyLevel extends LoadingLevel
                         InetSocketAddress socketAddress = new InetSocketAddress(inetAddress, toPort);
 
                         writeBuffer.put("HELO".getBytes());
+                        writeBuffer.flip();
 
                         try
                         {
@@ -250,15 +264,6 @@ public class GameServerLobbyLevel extends LoadingLevel
         isClientConnecting = false;
 
         //TODO: Think about not getting the address every time, just once on startup!
-//        try
-//        {
-//            ipAddress = Ipify.getPublicIp(true);
-//        }
-//        catch(IOException e)
-//        {
-//            Utils.log(e.getMessage());
-//            Utils.invalidCodePath();
-//        }
 
         IpPortAddress ipPortAddress = getAddressesAndCreateChannelAsWellAsSelector();
         channel = ipPortAddress.channel;
@@ -326,8 +331,11 @@ public class GameServerLobbyLevel extends LoadingLevel
         }
         else
         {
-            packetInterval = select(selector, readBuffer, writeBuffer, bufferBytes, packetInterval, clientLocalIp,
-                    Integer.valueOf(clientExternalPort), dt);
+            String toIp = clientExternalIp;
+            int toPort = localPort;
+
+            packetInterval = select(selector, readBuffer, writeBuffer, bufferBytes, packetInterval, toIp,
+                    toPort, dt);
         }
     }
 

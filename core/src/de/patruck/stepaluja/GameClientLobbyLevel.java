@@ -92,8 +92,11 @@ public class GameClientLobbyLevel extends LoadingLevel
         }
         else
         {
+            String toIp = clientExternalIp;
+            int toPort = GameServerLobbyLevel.localPort;
+
             packetInterval = GameServerLobbyLevel.select(selector, readBuffer, writeBuffer, bufferBytes,
-                    packetInterval, clientLocalIp, Integer.valueOf(clientExternalPort), dt);
+                    packetInterval, toIp, toPort, dt);
         }
     }
 
