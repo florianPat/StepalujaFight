@@ -5,13 +5,20 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
-class CreditsMenuComponent extends MenuComponent
+class MenuBtnsBackComponent extends MenuComponent
 {
-    private Rectangle backBtn;
+    protected Rectangle btns[];
+    protected Rectangle backBtn;
 
-    public CreditsMenuComponent(ExtendViewport viewport, GameStart screenManager)
+    public MenuBtnsBackComponent(ExtendViewport viewport, GameStart screenManager)
     {
         super(viewport, screenManager);
+    }
+
+    public MenuBtnsBackComponent(ExtendViewport viewport, GameStart screenManager,
+                                 Object menuArg)
+    {
+        super(viewport, screenManager, menuArg);
     }
 
     public void resetBtns()
@@ -28,6 +35,23 @@ class CreditsMenuComponent extends MenuComponent
 
         float scaleX = viewport.getWorldWidth() / imgSize.x;
         float scaleY = viewport.getWorldHeight() / imgSize.y;
+
+        for(Rectangle btn : btns)
+        {
+            Vector2 origin = new Vector2(btn.getX() + (btn.getWidth() / 2.0f),
+                    btn.getY() + (btn.getHeight() / 2.0f));
+
+            Vector2 localSpacePos = new Vector2(-(origin.x - btn.getX()), -(origin.y - btn.getY()));
+
+            btn.setWidth(btn.getWidth() * scaleX);
+            btn.setHeight(btn.getHeight() * scaleY);
+
+            localSpacePos.scl(scaleX, scaleY);
+            origin.scl(scaleX, scaleY);
+            localSpacePos.add(origin);
+
+            btn.setPosition(localSpacePos);
+        }
 
         Vector2 origin = new Vector2(backBtn.getX() + (backBtn.getWidth() / 2.0f),
                 backBtn.getY() + (backBtn.getHeight() / 2.0f));
@@ -51,8 +75,10 @@ class CreditsMenuComponent extends MenuComponent
 
         renderer.begin(ShapeRenderer.ShapeType.Line);
 
-        renderer.rect(backBtn.getX(), backBtn.getY(), backBtn.getWidth(), backBtn.getHeight());
-
+        for(Rectangle btn : btns)
+        {
+            renderer.rect(btn.getX(), btn.getY(), btn.getWidth(), btn.getHeight());
+        }
         renderer.end();
     }
 

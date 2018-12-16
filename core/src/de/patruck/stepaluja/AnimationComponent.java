@@ -26,7 +26,7 @@ public class AnimationComponent extends Component {
         super(id, eventManager, assetManager, spriteBatch, physics, owner);
 
         //Load textures
-        for(int i = 0; i < textureAtlas.length; ++i)
+        for(int i = 3; i < textureAtlas.length; ++i)
         {
             assetManager.load(textureAtlas[i], Texture.class);
         }

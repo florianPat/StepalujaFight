@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.math.Vector2;
 
 public class SignUpLevel extends Level
 {
@@ -18,8 +17,9 @@ public class SignUpLevel extends Level
     private boolean showingError = false;
     private float showingErrorTime = 0.0f;
 
-    public SignUpLevel(GameStart screenManager, Vector2 worldSize) {
-        super(screenManager, worldSize);
+    public SignUpLevel(GameStart screenManager)
+    {
+        super(screenManager);
     }
 
     @Override
@@ -47,8 +47,7 @@ public class SignUpLevel extends Level
             showingErrorTime += dt;
             if(showingErrorTime >= 2.0f)
             {
-                screenManager.setScreen(new MenuLevel("menu/Titelbild.jpg", screenManager,
-                        worldSize, MenuLevel.LevelComponentName.MainMenu));
+                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
             }
         }
         else if(showingError)
@@ -106,7 +105,7 @@ public class SignUpLevel extends Level
                     }
                     else
                     {
-                        Utils.logBreak("User creation got wrong!", screenManager, worldSize);
+                        Utils.logBreak("User creation got wrong!", screenManager);
                     }
                     break;
                 }
@@ -152,7 +151,7 @@ public class SignUpLevel extends Level
                     }
                     else
                     {
-                        Utils.logBreak("User creation got wrong!", screenManager, worldSize);
+                        Utils.logBreak("User creation got wrong!", screenManager);
                     }
                     break;
                 }

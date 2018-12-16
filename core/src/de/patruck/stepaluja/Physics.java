@@ -217,7 +217,7 @@ public class Physics
         boundingBox.updateRectCollider();
     }
 
-    ArrayList<String> getAllCollisionIdsWhichContain(String string)
+    public ArrayList<String> getAllCollisionIdsWhichContain(String string)
     {
         ArrayList<String> result = new ArrayList<String>();
 

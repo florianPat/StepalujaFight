@@ -5,7 +5,6 @@ import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.math.Vector2;
 
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -28,9 +27,9 @@ public class Utils
 
     public static void log(String msg) { Gdx.app.log("UtilsLog", msg); }
 
-    public static void logBreak(String msg, GameStart screenManager, Vector2 worldSize)
+    public static void logBreak(String msg, GameStart screenManager)
     {
-        screenManager.setScreen(new ErrorLevel(screenManager, worldSize, msg));
+        screenManager.setScreen(new ErrorLevel(screenManager, msg));
     }
 
     public static BitmapFont getFont()
@@ -108,12 +107,12 @@ public class Utils
         return result;
     }
 
-    public static boolean checkNetworkConnection(GameStart screenManager, Vector2 worldSize)
+    public static boolean checkNetworkConnection(GameStart screenManager)
     {
         boolean result = networkConnection();
         if(!result)
         {
-            Utils.logBreak("No Network connection!", screenManager, worldSize);
+            Utils.logBreak("No Network connection!", screenManager);
         }
 
         return result;

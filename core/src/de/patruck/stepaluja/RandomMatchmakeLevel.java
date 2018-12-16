@@ -1,12 +1,10 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.math.Vector2;
-
 public class RandomMatchmakeLevel extends LoadingLevel
 {
-    public RandomMatchmakeLevel(GameStart screenManager, Vector2 worldSize)
+    public RandomMatchmakeLevel(GameStart screenManager)
     {
-        super(screenManager, worldSize);
+        super(screenManager);
 
         msg = "Looking for open servers to join!";
     }
@@ -29,17 +27,17 @@ public class RandomMatchmakeLevel extends LoadingLevel
         if(matchmakeWithRandomResult.equals("-2"))
         {
             Utils.log("MakeServerLobbyLevel");
-            screenManager.setScreen(new GameServerLobbyLevel(screenManager, worldSize));
+            screenManager.setScreen(new GameServerLobbyLevel(screenManager));
         }
         else if(matchmakeWithRandomResult.equals("-1"))
         {
             Utils.logBreak(NativeBridge.errorCode != -2 ? NativeBridge.errorMsg : "MatchmakeWithRandom Error!",
-                    screenManager, worldSize);
+                    screenManager);
         }
         else if(!matchmakeWithRandomResult.equals("0"))
         {
             Utils.log("MakeClientLevel");
-            screenManager.setScreen(new GameClientLobbyLevel(matchmakeWithRandomResult, screenManager, worldSize));
+            screenManager.setScreen(new GameClientLobbyLevel(matchmakeWithRandomResult, screenManager));
         }
     }
 }

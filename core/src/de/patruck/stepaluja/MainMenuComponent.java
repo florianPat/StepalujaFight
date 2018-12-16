@@ -14,16 +14,9 @@ class MainMenuComponent extends MenuComponent
     private boolean isAnonymous;
     private BitmapFont font;
 
-    // private Rectangle playBtn;
-    // private Rectangle partyBtn;
-    // private Rectangle settingsBtn;
-    // private Rectangle creditsBtn;
-
-    public MainMenuComponent(ExtendViewport viewport, Vector2 worldSize, Vector2 imgSize,
-                             GameStart screenManager, SpriteBatch spriteBatchIn)
+    public MainMenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatchIn)
     {
-        super(viewport, worldSize, imgSize, screenManager, spriteBatchIn);
-
+        super(viewport, screenManager, spriteBatchIn);
         isAnonymous = NativeBridge.isCurrentUserAnonymous();
         font = Utils.getFont();
     }
@@ -48,15 +41,17 @@ class MainMenuComponent extends MenuComponent
     @Override
     public void recalculateBtnPositions()
     {
+        super.recalculateBtnPositions();
+
         resetBtns();
 
-        float scaleX = worldSize.x / imgSize.x;
-        float scaleY = worldSize.y / imgSize.y;
+        float scaleX = viewport.getWorldWidth() / imgSize.x;
+        float scaleY = viewport.getWorldHeight() / imgSize.y;
 
         for(Rectangle btn : btns)
         {
             Vector2 origin = new Vector2(btn.getX() + (btn.getWidth() / 2.0f),
-                                         btn.getY() + (btn.getHeight() / 2.0f));
+                    btn.getY() + (btn.getHeight() / 2.0f));
 
             Vector2 localSpacePos = new Vector2(-(origin.x - btn.getX()), -(origin.y - btn.getY()));
 
@@ -102,7 +97,6 @@ class MainMenuComponent extends MenuComponent
     public void dispose()
     {
         super.dispose();
-
         font.dispose();
     }
 
@@ -122,28 +116,30 @@ class MainMenuComponent extends MenuComponent
 
         if(btns[0].contains(viewportPosition))
         {
-            //screenManager.setScreen(new TestLevel(screenManager, worldSize));
-            screenManager.setScreen(new RandomMatchmakeLevel(screenManager, worldSize));
+            screenManager.setScreen(new MenuLevel(screenManager,
+                    MenuLevel.LevelComponentName.PlayMenu));
         }
         else if(btns[1].contains(viewportPosition))
         {
-            Utils.log("Currently not implemented! (party)");
+            screenManager.setScreen(new MenuLevel(screenManager,
+                    MenuLevel.LevelComponentName.PartyMenu));
         }
         else if(btns[2].contains(viewportPosition))
         {
-            Utils.log("Currently not implemented! (settings)");
+            screenManager.setScreen(new MenuLevel(screenManager,
+                    MenuLevel.LevelComponentName.SettingsMenu));
         }
         else if(btns[3].contains(viewportPosition))
         {
-            screenManager.setScreen(new MenuLevel("menu/Mitwirkende.jpg", screenManager,
-                    worldSize, MenuLevel.LevelComponentName.CreditsMenu));
+            screenManager.setScreen(new MenuLevel(screenManager,
+                    MenuLevel.LevelComponentName.CreditsMenu));
         }
 
         if(isAnonymous)
         {
             if(convertAnToPerBtn.contains(viewportPosition))
             {
-                screenManager.setScreen(new SignUpLevel(screenManager, worldSize));
+                screenManager.setScreen(new SignUpLevel(screenManager));
             }
         }
 

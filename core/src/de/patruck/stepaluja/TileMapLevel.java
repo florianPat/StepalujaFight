@@ -2,7 +2,6 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.math.Vector2;
 
 public class TileMapLevel extends Level
 {
@@ -10,16 +9,16 @@ public class TileMapLevel extends Level
     protected String levelName;
     protected OnScreenControls onScreenControls;
 
-    public TileMapLevel(String levelName, GameStart screenManager, Vector2 worldSize)
+    public TileMapLevel(String levelName, GameStart screenManager)
     {
-        super(screenManager, worldSize);
+        super(screenManager);
         this.levelName = levelName;
     }
 
     @Override
     public void create()
     {
-        map = new Tilemap(levelName, assetManager, physics, screenManager, worldSize);
+        map = new Tilemap(levelName, assetManager, physics, screenManager);
 
         onScreenControls = new OnScreenControls(assetManager);
         Gdx.input.setInputProcessor(onScreenControls);

@@ -3,7 +3,6 @@ package de.patruck.stepaluja;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.math.Vector2;
 
 public class ErrorLevel extends Level {
 
@@ -11,8 +10,9 @@ public class ErrorLevel extends Level {
     private float showingErrorTime = 0.0f;
     private String errorMsg;
 
-    public ErrorLevel(GameStart screenManager, Vector2 worldSize, String errorMsg) {
-        super(screenManager, worldSize);
+    public ErrorLevel(GameStart screenManager, String errorMsg)
+    {
+        super(screenManager);
 
         this.errorMsg = errorMsg;
     }

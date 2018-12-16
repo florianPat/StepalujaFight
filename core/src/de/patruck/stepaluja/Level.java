@@ -19,12 +19,11 @@ public abstract class Level implements Screen
     protected AssetManager assetManager;
     protected Physics physics;
     protected GameStart screenManager;
-    protected Vector2 worldSize;
+    private final Vector2 worldSize = new Vector2(900.0f, 600.0f);
 
-    public Level(GameStart screenManager, Vector2 worldSize)
+    public Level(GameStart screenManager)
     {
         this.screenManager = screenManager;
-        this.worldSize = worldSize;
     }
 
     public abstract void create();
@@ -77,9 +76,6 @@ public abstract class Level implements Screen
     public void resize(int width, int height)
     {
         viewport.update(width, height, true);
-
-        worldSize.x = viewport.getWorldWidth();
-        worldSize.y = viewport.getWorldHeight();
     }
 
     @Override

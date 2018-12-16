@@ -1,7 +1,5 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.math.Vector2;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -23,9 +21,9 @@ public class GameClientLobbyLevel extends LoadingLevel
     private NetworkManager networkManager;
     private float writeTimer = 0.0f;
 
-    public GameClientLobbyLevel(String connAddress, GameStart screenManager, Vector2 worldSize)
+    public GameClientLobbyLevel(String connAddress, GameStart screenManager)
     {
-        super(screenManager, worldSize);
+        super(screenManager);
 
         final int nPipes = 3;
 
@@ -99,7 +97,7 @@ public class GameClientLobbyLevel extends LoadingLevel
             {
                 case -1:
                 {
-                    Utils.logBreak(NativeBridge.errorMsg, screenManager, worldSize);
+                    Utils.logBreak(NativeBridge.errorMsg, screenManager);
                     break;
                 }
                 case 0:

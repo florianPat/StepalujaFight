@@ -9,6 +9,6 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		final Vector2 worldSize = new Vector2(900.0f, 600.0f);
 
-		new LwjglApplication(new GameStart(worldSize, true), "Krasses Spiel", (int)worldSize.x, (int)worldSize.y);
+		new LwjglApplication(new GameStart(true), "Krasses Spiel", (int) worldSize.x, (int) worldSize.y);
 	}
 }

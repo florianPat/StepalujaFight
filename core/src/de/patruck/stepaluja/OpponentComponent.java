@@ -2,7 +2,6 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,10 +11,11 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 
-public class PlayerComponent extends AnimationComponent {
+public class OpponentComponent extends AnimationComponent
+{
     public static final int id = Utils.getGUID();
 
-    protected float speed = 50.0f;
+    protected float speed = 60.0f;
     private float stateTime = 0.0f;
 
     private enum WalkState
@@ -23,6 +23,7 @@ public class PlayerComponent extends AnimationComponent {
         LEFT,
         RIGHT
     }
+
     WalkState walkState = WalkState.RIGHT;
 
     private enum JumpState
@@ -31,6 +32,7 @@ public class PlayerComponent extends AnimationComponent {
         FALLING,
         NONE
     }
+
     private JumpState jumpState = JumpState.NONE;
     private float jumpTimer = 0.0f;
     private float maxJumpTime = 0.35f;
@@ -64,81 +66,57 @@ public class PlayerComponent extends AnimationComponent {
     private Sprite sprite;
 
     private final float norHitPoints = 50.0f;
-    private float hitPoints = 1.0f;
+    private float hitPoints = 2.0f;
     private final float norPlusMultHitPoints = 0.5f;
 
-    private OnScreenControls.InputSystem inputSystem;
-
-    private final float MIN_CAMERA_ZOOM = 0.35f;
-    private final float MAX_CAMERA_ZOOM = 0.65f;
-
-    private OrthographicCamera camera;
-    private float camZoom = MAX_CAMERA_ZOOM;
-    private float newCamZoom = MIN_CAMERA_ZOOM;
+    private float mapWidth, mapHeight;
     private float currentProgress = 0.0f;
 
-    private int tilemapWidth, tilemapHeight;
-
-    private int nLives = 3;
     private boolean respawn = false;
-    private float maxRespawnTime = 2.0f;
+    private float maxRespawnTime = 0.0f;
 
-    private HeartComponent heartComponent = null;
+    private enum InputInput
+    {
+        LEFT,
+        RIGHT
+    }
 
-    private char gameMode;
+    InputInput inputInput = InputInput.LEFT;
 
-    public PlayerComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
-                           int n, OnScreenControls.InputSystem inputSystemIn,
-                           OrthographicCamera cameraIn, int tilemapWidthIn, int tilemapHeightIn, HeartComponent heartComponentIn,
-                           char gameModeIn)
+    private final float minX;
+    private final float maxX;
+
+    public OpponentComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
+                             int n, float mapWidthIn, float mapHeightIn)
     {
         super(eventManager, assetManager, spriteBatch, physics, owner, textureAtlas);
 
         playerId = n;
-        gameMode = gameModeIn;
 
-        tilemapWidth = tilemapWidthIn;
-        tilemapHeight = tilemapHeightIn;
-
-        inputSystem = inputSystemIn;
-
-        camera = cameraIn;
+        mapWidth = mapWidthIn;
+        mapHeight = mapHeightIn;
 
         textureSmashLeft = assetManager.get(textureAtlas[9]);
         textureSmashRight = assetManager.get(textureAtlas[10]);
         textureSmash = textureSmashLeft;
+
+        minX = mapWidth * 0.15f;
+        maxX = mapWidth - (mapWidth * 0.24f);
 
         //create body
         rect = new Rectangle();
         collider = new Collider(rect);
         ArrayList<String> s = new ArrayList<String>();
         s.add("Ground");
-        body = new Body(new Vector2(450 + (n == 0 ? 0 : 100), tilemapHeight - 64), "Player" + n, collider, s, false, false);
+        body = new Body(new Vector2(MathUtils.random(minX, maxX), mapHeight - 128), "Opponent" + n, collider, s, false, false);
         physics.addElement(body);
 
         size = new Vector2(16.0f, 16.0f);
         rectSmash = new Rectangle(0.0f, 0.0f, size.x, size.y);
         colliderSmash = new Collider(rectSmash);
         ArrayList<String> sSmash = new ArrayList<String>();
-        switch(gameMode)
-        {
-            case 'P':
-            {
-                sSmash = physics.getAllCollisionIdsWhichContain("Opponent");
-                break;
-            }
-            case 'O':
-            {
-                sSmash.add("Player" + (n == 0 ? 1 : 0));
-                break;
-            }
-            default:
-            {
-                Utils.invalidCodePath();
-                break;
-            }
-        }
-        bodySmash = new Body(new Vector2(rectSmash.getX(), rectSmash.getY()), "PlayerSmashTrigger" + n, colliderSmash, sSmash, true, false);
+        sSmash.add("Player" + 0);
+        bodySmash = new Body(new Vector2(rectSmash.getX(), rectSmash.getY()), "EnemySmashTrigger" + n, colliderSmash, sSmash, true, false);
         bodySmash.setIsActive(false);
         physics.addElement(bodySmash);
 
@@ -150,11 +128,11 @@ public class PlayerComponent extends AnimationComponent {
         current = animation.get("right-walk").getKeyFrame(0.0f);
         sprite = new Sprite(current);
 
-        heartComponent = heartComponentIn;
-
-        smashFunction = new Function() {
+        smashFunction = new Function()
+        {
             @Override
-            public void Event(EventData eventData) {
+            public void Event(EventData eventData)
+            {
                 Utils.aassert(eventData instanceof SmashEventData);
                 SmashEventData event = (SmashEventData) eventData;
 
@@ -209,7 +187,8 @@ public class PlayerComponent extends AnimationComponent {
     }
 
     @Override
-    public void update(float dt) {
+    public void update(float dt)
+    {
         Utils.aassert(nJumps >= 0);
 
         currentProgress += 0.05f * dt;
@@ -292,27 +271,49 @@ public class PlayerComponent extends AnimationComponent {
         //NOTE: If we do not want that you can walk if you hit, delete the && smashState == JumpS...
         if((!lockMotion) && smashState == JumpState.NONE)
         {
-            if(inputSystem.isMoveLeftPressed())
+            int random = MathUtils.random(100);
+
+            if(random == 50)
             {
-                body.vel.x = -speed;
-                hittingVec.x = -1.0f;
-                if(jumpState == JumpState.NONE)
-                {
-                    Utils.aassert(animation.containsKey("left-walk"));
-                    current = animation.get("left-walk").getKeyFrame(stateTime, true);
-                }
-                walkState = WalkState.LEFT;
+                inputInput = inputInput == InputInput.RIGHT ? InputInput.LEFT :
+                        InputInput.RIGHT;
             }
-            if(inputSystem.isMoveRightPressed())
+
+            if(body.pos.x < minX)
             {
-                body.vel.x = speed;
-                hittingVec.x = 1.0f;
-                if(jumpState == JumpState.NONE)
+                inputInput = InputInput.RIGHT;
+            }
+            if(body.pos.x > maxX || (body.pos.y < 390.0f && body.pos.x > 480.0f))
+            {
+                inputInput = InputInput.LEFT;
+            }
+
+            switch(inputInput)
+            {
+                case LEFT:
                 {
-                    Utils.aassert (animation.containsKey("right-walk"));
-                    current = animation.get("right-walk").getKeyFrame(stateTime, true);
+                    body.vel.x = -speed;
+                    hittingVec.x = -1.0f;
+                    if(jumpState == JumpState.NONE)
+                    {
+                        Utils.aassert(animation.containsKey("left-walk"));
+                        current = animation.get("left-walk").getKeyFrame(stateTime, true);
+                    }
+                    walkState = WalkState.LEFT;
+                    break;
                 }
-                walkState = WalkState.RIGHT;
+                case RIGHT:
+                {
+                    body.vel.x = speed;
+                    hittingVec.x = 1.0f;
+                    if(jumpState == JumpState.NONE)
+                    {
+                        Utils.aassert(animation.containsKey("right-walk"));
+                        current = animation.get("right-walk").getKeyFrame(stateTime, true);
+                    }
+                    walkState = WalkState.RIGHT;
+                    break;
+                }
             }
 
             if(body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.SHOES)
@@ -320,7 +321,7 @@ public class PlayerComponent extends AnimationComponent {
                 nJumps = 3;
             }
 
-            if(inputSystem.isJumpPressed())
+            if(random > 95)
             {
                 if(nJumps > 0)
                 {
@@ -329,7 +330,7 @@ public class PlayerComponent extends AnimationComponent {
                         jumpTimer = 0.0f;
                         --nJumps;
                     }
-                    else if(jumpState == JumpState.NONE || jumpState == jumpState.FALLING)
+                    else if(jumpState == JumpState.NONE || jumpState == JumpState.FALLING)
                     {
                         jumpState = JumpState.JUMPING;
                         --nJumps;
@@ -363,7 +364,7 @@ public class PlayerComponent extends AnimationComponent {
             }
 
             //fighting
-            if(inputSystem.isHitPressed() && smashState == JumpState.NONE)
+            if(random < 15 && smashState == JumpState.NONE)
             {
                 textureSmash = walkState == WalkState.RIGHT ? textureSmashRight : textureSmashLeft;
                 current = textureSmash;
@@ -374,14 +375,7 @@ public class PlayerComponent extends AnimationComponent {
 
         if(bodySmash.getIsTriggered())
         {
-            if(gameMode == 'P')
-            {
-                String hitOpponent = bodySmash.getTriggerInformation().triggerElementCollision;
-                char numberChar = hitOpponent.charAt(hitOpponent.length() - 1);
-                eventManager.TriggerEvent(new SmashEventData(numberChar - '0', hittingVec));
-            }
-            else
-                eventManager.TriggerEvent(new SmashEventData(playerId == 0 ? 1 : 0, hittingVec));
+            eventManager.TriggerEvent(new SmashEventData(0, hittingVec));
         }
 
         //set frame
@@ -391,7 +385,7 @@ public class PlayerComponent extends AnimationComponent {
 
         if(current == null)
         {
-            switch (walkState)
+            switch(walkState)
             {
                 case LEFT:
                 {
@@ -412,35 +406,24 @@ public class PlayerComponent extends AnimationComponent {
             }
         }
 
-        if(newPos.y < -current.getHeight() || newPos.x < -current.getHeight() ||
-                newPos.y > tilemapHeight + current.getHeight() ||
-                newPos.x > tilemapWidth + current.getWidth())
+        if(newPos.y < -current.getHeight())
         {
-            --nLives;
-            heartComponent.setHeartState(nLives, HeartComponent.HeartState.EMPTY);
-            if(nLives > 0)
-            {
-                newPos = new Vector2(450 + (playerId == 0 ? 0 : 100), tilemapHeight - 64);
-                body.setPos(newPos);
-                body.vel.x = 0.0f;
-                body.vel.y = 0.0f;
-                lockMotion = true;
-                walkState = WalkState.RIGHT;
-                jumpState = JumpState.NONE;
-                jumpTimer = 0.0f;
-                smashTimer = 0.0f;
-                smashState = JumpState.NONE;
-                nJumps = 3;
-                sprite.setColor(Color.WHITE);
-                hitTimer = 0.0f;
-                getHit = false;
-                respawn = true;
-                hitPoints = 1.0f;
-            }
-            else
-            {
-                eventManager.TriggerEvent(new DeadEventData(playerId));
-            }
+            newPos = new Vector2(MathUtils.random(minX, maxX), mapHeight - 128);
+            body.setPos(newPos);
+            body.vel.x = 0.0f;
+            body.vel.y = 0.0f;
+            lockMotion = true;
+            walkState = WalkState.RIGHT;
+            jumpState = JumpState.NONE;
+            jumpTimer = 0.0f;
+            smashTimer = 0.0f;
+            smashState = JumpState.NONE;
+            nJumps = 3;
+            sprite.setColor(Color.WHITE);
+            hitTimer = 0.0f;
+            getHit = false;
+            respawn = true;
+            hitPoints = 1.0f;
         }
 
         sprite.setTexture(current);
@@ -455,91 +438,9 @@ public class PlayerComponent extends AnimationComponent {
     }
 
     @Override
-    public void draw() {
+    public void draw()
+    {
         sprite.setPosition(body.pos.x, body.pos.y);
         sprite.draw(spriteBatch);
-
-        if(playerId == 0)
-        {
-            camera.position.x = body.pos.x;
-            camera.position.y = body.pos.y;
-
-            camera.zoom = camZoom;
-
-            if(gameMode == 'P')
-            {
-                clipCamera();
-            }
-        }
-        else if(playerId == 1)
-        {
-            Vector2 newCamPos = new Vector2((body.pos.x + camera.position.x) / 2.0f,
-                    (body.pos.y + camera.position.y) / 2.0f);
-
-            boolean farAway = false;
-
-            float length = body.pos.x - camera.position.x;
-            if(Math.abs(length) >= 200.0f)
-            {
-                farAway = true;
-            }
-            else
-            {
-                length = body.pos.y - camera.position.y;
-                if(Math.abs(length) >= 100.0f)
-                {
-                    farAway = true;
-                }
-            }
-
-            if(farAway && newCamZoom != MAX_CAMERA_ZOOM)
-            {
-                newCamZoom = MAX_CAMERA_ZOOM;
-                currentProgress = 0.0f;
-            }
-            else if(!farAway && newCamZoom != MIN_CAMERA_ZOOM)
-            {
-                newCamZoom = MIN_CAMERA_ZOOM;
-                currentProgress = 0.0f;
-            }
-            if(newCamZoom != camZoom)
-            {
-                camZoom = MathUtils.lerp(camZoom, newCamZoom, currentProgress);
-            }
-            camera.zoom = camZoom;
-            camera.position.x = newCamPos.x;
-            camera.position.y = newCamPos.y;
-
-            clipCamera();
-        }
-        else
-        {
-            Utils.invalidCodePath();
-        }
-
-        camera.update();
-    }
-
-    private void clipCamera()
-    {
-        float minX = (camera.viewportWidth / 2.0f) * camZoom;
-        float minY = (camera.viewportHeight / 2.0f) * camZoom;
-        if(camera.position.x < minX)
-        {
-            camera.position.x = minX;
-        }
-        else if(camera.position.x > (tilemapWidth - minX))
-        {
-            camera.position.x = tilemapWidth - minX;
-        }
-
-        if(camera.position.y < minY)
-        {
-            camera.position.y = minY;
-        }
-        else if(camera.position.y > (tilemapHeight - minY))
-        {
-            camera.position.y = tilemapHeight - minY;
-        }
     }
 }

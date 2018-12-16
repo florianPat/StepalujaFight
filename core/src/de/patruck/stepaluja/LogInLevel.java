@@ -1,12 +1,10 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.math.Vector2;
-
 public class LogInLevel extends Level
 {
-    public LogInLevel(GameStart screenManager, Vector2 worldSize)
+    public LogInLevel(GameStart screenManager)
     {
-        super(screenManager, worldSize);
+        super(screenManager);
     }
 
     @Override
@@ -16,6 +14,9 @@ public class LogInLevel extends Level
     @Override
     public void render(float dt)
     {
+
+        if(NativeBridge.existsCurrentUser())
+        {
         /*switch (NativeBridge.initializationPhase)
         {
             case 0:
@@ -24,8 +25,7 @@ public class LogInLevel extends Level
             }
             case 1:
             {
-                screenManager.setScreen(new MenuLevel("menu/Titelbild.jpg", screenManager,
-                        worldSize, MenuLevel.LevelComponentName.MainMenu));
+                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
                 break;
             }
             case -1:
@@ -39,15 +39,11 @@ public class LogInLevel extends Level
                 break;
             }
         }*/
-
-        if(NativeBridge.existsCurrentUser())
-        {
-            screenManager.setScreen(new MenuLevel("menu/Titelbild.jpg", screenManager,
-                    worldSize, MenuLevel.LevelComponentName.MainMenu));
+            screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
         }
         else
         {
-            Utils.logBreak("Log in failed!", screenManager, worldSize);
+            Utils.logBreak("Log in failed!", screenManager);
         }
     }
 }

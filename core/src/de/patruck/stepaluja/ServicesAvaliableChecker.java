@@ -1,16 +1,14 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.math.Vector2;
-
 public class ServicesAvaliableChecker extends Level
 {
     public native static int avaliableCheckerResult();
 
     private GameStart screenManager;
 
-    public ServicesAvaliableChecker(GameStart screenManager, Vector2 worldSize)
+    public ServicesAvaliableChecker(GameStart screenManager)
     {
-        super(screenManager, worldSize);
+        super(screenManager);
 
         this.screenManager = screenManager;
     }
@@ -38,7 +36,7 @@ public class ServicesAvaliableChecker extends Level
             }
             case 2:
             {
-                Utils.logBreak("Google play services not avaliable!", screenManager, worldSize);
+                Utils.logBreak("Google play services not avaliable!", screenManager);
                 break;
             }
             default:

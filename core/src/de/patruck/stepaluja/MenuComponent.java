@@ -10,23 +10,41 @@ abstract class MenuComponent extends InputAdapter
 {
     protected ExtendViewport viewport;
     protected ShapeRenderer renderer;
-    protected Vector2 worldSize;
-    protected Vector2 imgSize;
+    protected Vector2 imgSize = null;
     protected GameStart screenManager;
-    protected SpriteBatch spriteBatch;
+    protected SpriteBatch spriteBatch = null;
+    protected Object componentArg = null;
 
-    public MenuComponent(ExtendViewport viewport, Vector2 worldSize, Vector2 imgSize,
-                         GameStart screenManager, SpriteBatch spriteBatch)
+    public MenuComponent(ExtendViewport viewport, GameStart screenManager)
     {
         this.viewport = viewport;
-        this.worldSize = worldSize;
-        this.imgSize = imgSize;
         renderer = new ShapeRenderer();
         this.screenManager = screenManager;
+    }
+
+    public MenuComponent(ExtendViewport viewport, GameStart screenManager,
+                         Object componentArg)
+    {
+        this(viewport, screenManager);
+
+        this.componentArg = componentArg;
+    }
+
+    public MenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatch)
+    {
+        this(viewport, screenManager);
         this.spriteBatch = spriteBatch;
     }
 
-    abstract public void recalculateBtnPositions();
+    public void setImgSize(Vector2 imgSizeIn)
+    {
+        imgSize = imgSizeIn;
+    }
+
+    public void recalculateBtnPositions()
+    {
+        Utils.aassert(imgSize != null);
+    }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button)

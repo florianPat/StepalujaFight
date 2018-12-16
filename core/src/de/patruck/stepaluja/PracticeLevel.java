@@ -1,19 +1,17 @@
 package de.patruck.stepaluja;
 
-public class TestLevel extends TileMapLevel
+public class PracticeLevel extends TileMapLevel
 {
-    private final int playerCount = 2;
+    private final int opponents = 4;
     private Function deadFlaggedFunction;
-    private HeartComponent[] heartComponents;
-    private char[] playerNumbers;
+    private HeartComponent hc;
+    private char playerNumber;
 
-    public TestLevel(GameStart screenManager, char player0, char player1)
+    public PracticeLevel(GameStart screenManager, char player)
     {
         super("maps/map2.txt", screenManager);
 
-        playerNumbers = new char[playerCount];
-        playerNumbers[0] = player0;
-        playerNumbers[1] = player1;
+        playerNumber = player;
     }
 
     @Override
@@ -21,11 +19,8 @@ public class TestLevel extends TileMapLevel
     {
         super.resize(width, height);
 
-        for(HeartComponent hc : heartComponents)
-        {
-            hc.viewport.update(width, height, true);
-            hc.recalculateHeartPos();
-        }
+        hc.viewport.update(width, height, true);
+        hc.recalculateHeartPos();
     }
 
     private void createPlayer(String playerName, int n)
@@ -33,13 +28,21 @@ public class TestLevel extends TileMapLevel
         String[] textureAtlas = new String[11];
         for(int i = 0; i < textureAtlas.length; ++i)
         {
-            textureAtlas[i] = playerName + "/" + (i+1) + ".png";
+            textureAtlas[i] = playerName + "/" + (i + 1) + ".png";
         }
+
         Actor actor = gom.addActor();
-        heartComponents[n] = new HeartComponent(assetManager, spriteBatch, n);
+        hc = new HeartComponent(assetManager, spriteBatch, n);
         actor.addComponent(new PlayerComponent(eventManager, assetManager, spriteBatch, physics,
                 actor, textureAtlas, n, onScreenControls.input, camera,
-                map.getWidth(), map.getHeight(), heartComponents[n], 'O'));
+                map.getWidth(), map.getHeight(), hc, 'P'));
+    }
+
+    private void createOpponent(int n, String[] textureAtlasOpponent)
+    {
+        Actor actor = gom.addActor();
+        actor.addComponent(new OpponentComponent(eventManager, assetManager, spriteBatch, physics,
+                actor, textureAtlasOpponent, n, map.getWidth(), map.getHeight()));
     }
 
     @Override
@@ -47,16 +50,26 @@ public class TestLevel extends TileMapLevel
     {
         super.create();
 
-        heartComponents = new HeartComponent[playerCount];
-
-        for(int i = 0; i < playerCount; ++i)
+        char opponentNumber = playerNumber == '0' ? '1' : '0';
+        String[] textureAtlasOpponent = new String[11];
+        String opponentName = "player" + opponentNumber;
+        for(int i = 0; i < textureAtlasOpponent.length; ++i)
         {
-            createPlayer("player" + playerNumbers[i], i);
+            textureAtlasOpponent[i] = opponentName + "/" + (i + 1) + ".png";
         }
 
-        deadFlaggedFunction = new Function() {
+        for(int i = 1; i <= opponents; ++i)
+        {
+            createOpponent(i, textureAtlasOpponent);
+        }
+
+        createPlayer("player" + playerNumber, 0);
+
+        deadFlaggedFunction = new Function()
+        {
             @Override
-            public void Event(EventData eventData) {
+            public void Event(EventData eventData)
+            {
                 Utils.aassert(eventData instanceof DeadEventData);
                 DeadEventData event = (DeadEventData) eventData;
 
@@ -77,9 +90,6 @@ public class TestLevel extends TileMapLevel
     {
         super.render(dt);
 
-        for(HeartComponent hc : heartComponents)
-        {
-            hc.draw();
-        }
+        hc.draw();
     }
 }

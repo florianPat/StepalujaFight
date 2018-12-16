@@ -75,8 +75,12 @@ public class Tilemap {
     private Texture water;
     private Physics physics;
 
-    public Tilemap(String filename, AssetManager assetManager, Physics physics, GameStart screenManager,
-                   Vector2 worldSize)
+    /**
+     * Erstellt eine Tilemap von einer Textdatei.
+     *
+     * @param filename Der Textdateiname der Tilemap, welche eingelesen wird und danach gerendert werden kann
+     */
+    public Tilemap(String filename, AssetManager assetManager, Physics physics, GameStart screenManager)
     {
         this.physics = physics;
 
@@ -100,7 +104,7 @@ public class Tilemap {
         }
         catch(IOException e)
         {
-            Utils.log(e.getMessage());
+            Utils.log("Failed to init map!");
             Utils.invalidCodePath();
             //erstelleKarte();
         }
@@ -174,7 +178,7 @@ public class Tilemap {
 
         for (int i = 0; i < height; i++)
         {
-            for (int j = 0;j < width; j++)
+            for(int j = 0; j < width; j++)
             {
                 zufall = (int)(Math.random()*5);
 
@@ -199,11 +203,14 @@ public class Tilemap {
         physics.addElement(body);
     }
 
+    /**
+     * Zeichnet die Tilemap
+     */
     public void draw(SpriteBatch spriteBatch)
     {
         for (int i = 0; i < height; i++)
         {
-            for (int j = 0;j < width; j++)
+            for(int j = 0; j < width; j++)
             {
                 Tile tile = karte[i][j];
                 Utils.aassert(tile != null);

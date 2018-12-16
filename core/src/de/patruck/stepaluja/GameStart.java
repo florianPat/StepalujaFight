@@ -2,16 +2,13 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.math.Vector2;
 
 public class GameStart extends Game
 {
-    private Vector2 worldSize;
     private boolean googlePlayServicesAvailable;
 
-    public GameStart(Vector2 worldSize, boolean servicesAvailable)
+    public GameStart(boolean servicesAvailable)
     {
-        this.worldSize = worldSize;
         googlePlayServicesAvailable = servicesAvailable;
     }
 
@@ -23,13 +20,12 @@ public class GameStart extends Game
         if(!prefs.contains("username"))
         {
             Utils.log("create new user!");
-            //setScreen(new SignUpLevel(this, worldSize));
-            setScreen(new SignUpAnonymouslyLevel(this, worldSize));
+            setScreen(new SignUpAnonymouslyLevel(this));
         }
         else
         {
             Utils.log("sign in");
-            setScreen(new LogInLevel(this, worldSize));
+            setScreen(new LogInLevel(this));
         }
     }
 
@@ -37,11 +33,11 @@ public class GameStart extends Game
     public void create()
     {
         //NOTE: Set first level!
-        if(!Utils.checkNetworkConnection(this, worldSize)) return;
+        if(!Utils.checkNetworkConnection(this)) return;
 
         if(!googlePlayServicesAvailable)
         {
-            setScreen(new ServicesAvaliableChecker(this, worldSize));
+            setScreen(new ServicesAvaliableChecker(this));
         }
         else
         {

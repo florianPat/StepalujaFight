@@ -5,21 +5,17 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.Vector2;
 
 public class LoadingLevel extends Level
 {
     protected Texture menuTex;
     protected Sprite menuSprite;
-    protected Vector2 worldSize;
     protected BitmapFont font;
     protected String msg = "Loading some cute cat photos from a server. Who knows from wich? XD";
 
-    public LoadingLevel(GameStart screenManager, Vector2 worldSize)
+    public LoadingLevel(GameStart screenManager)
     {
-        super(screenManager, worldSize);
-
-        this.worldSize = worldSize;
+        super(screenManager);
     }
 
     @Override
@@ -45,7 +41,7 @@ public class LoadingLevel extends Level
 
         spriteBatch.begin();
         menuSprite.draw(spriteBatch);
-        font.draw(spriteBatch, msg, 0.0f, worldSize.y * 0.15f);
+        font.draw(spriteBatch, msg, 0.0f, viewport.getWorldHeight() * 0.15f);
         spriteBatch.end();
     }
 
@@ -62,6 +58,6 @@ public class LoadingLevel extends Level
     public void resize(int width, int height) {
         super.resize(width, height);
 
-        menuSprite.setSize(worldSize.x, worldSize.y);
+        menuSprite.setSize(viewport.getWorldWidth(), viewport.getWorldHeight());
     }
 }

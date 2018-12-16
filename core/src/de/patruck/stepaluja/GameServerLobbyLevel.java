@@ -1,7 +1,5 @@
 package de.patruck.stepaluja;
 
-import com.badlogic.gdx.math.Vector2;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -30,9 +28,9 @@ public class GameServerLobbyLevel extends LoadingLevel
     public static float maxWriteTimer = 0.8f;
     private static float writeTimer = 0.0f;
 
-    public GameServerLobbyLevel(GameStart screenManager, Vector2 worldSize)
+    public GameServerLobbyLevel(GameStart screenManager)
     {
-        super(screenManager, worldSize);
+        super(screenManager);
 
         msg = "Created a server, because there where no open ones!\nWaiting for players to join...";
     }
@@ -173,7 +171,7 @@ public class GameServerLobbyLevel extends LoadingLevel
                 {
                     case -1:
                     {
-                        Utils.logBreak(NativeBridge.errorMsg, screenManager, worldSize);
+                        Utils.logBreak(NativeBridge.errorMsg, screenManager);
                         break;
                     }
                     case 0:
@@ -295,7 +293,7 @@ public class GameServerLobbyLevel extends LoadingLevel
                 {
                     case -1:
                     {
-                        Utils.logBreak(NativeBridge.errorMsg, screenManager, worldSize);
+                        Utils.logBreak(NativeBridge.errorMsg, screenManager);
                         break;
                     }
                     case 0:
@@ -326,7 +324,7 @@ public class GameServerLobbyLevel extends LoadingLevel
                     {
                         case -1:
                         {
-                            Utils.logBreak(NativeBridge.errorMsg, screenManager, worldSize);
+                            Utils.logBreak(NativeBridge.errorMsg, screenManager);
                             break;
                         }
                         case 0:
