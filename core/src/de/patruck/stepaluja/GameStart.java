@@ -37,7 +37,7 @@ public class GameStart extends Game
     public void create()
     {
         //NOTE: Set first level!
-        Utils.checkNetworkConnection(this, worldSize);
+        if(!Utils.checkNetworkConnection(this, worldSize)) return;
 
         if(!googlePlayServicesAvailable)
         {

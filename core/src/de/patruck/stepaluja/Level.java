@@ -71,7 +71,6 @@ public abstract class Level implements Screen
         spriteBatch.dispose();
         assetManager.dispose();
         physics.dispose();
-        NativeBridge.dispose();
     }
 
     @Override
@@ -96,5 +95,6 @@ public abstract class Level implements Screen
     @Override
     public void hide()
     {
+        NativeBridge.dispose();
     }
 }

@@ -2,19 +2,16 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.math.Vector2;
 
-import org.ipify.Ipify;
-
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
 
 public class GameServerLobbyLevel extends LoadingLevel
 {
@@ -24,32 +21,26 @@ public class GameServerLobbyLevel extends LoadingLevel
 //    private long threadPointer = 0;
     private static boolean isClientConnecting;
     public static final int localPort = 54777;
-    private String clientExternalIp = null;
-    private String clientExternalPort = null;
-    private String clientLocalIp = null;
+    private InetAddress clientExternalIp = null;
+    private int clientExternalPort = 0;
+    private InetAddress clientLocalIp = null;
     private DatagramChannel channel = null;
     private Selector selector = null;
-    byte[] bufferBytes;
-    private ByteBuffer readBuffer;
-    private ByteBuffer writeBuffer;
-    private float packetInterval = 0.0f;
-    public static final float maxPacketInterval = 0.75f;
+    private NetworkManager networkManager;
+    public static float maxWriteTimer = 0.8f;
+    private static float writeTimer = 0.0f;
 
     public GameServerLobbyLevel(GameStart screenManager, Vector2 worldSize)
     {
         super(screenManager, worldSize);
 
         msg = "Created a server, because there where no open ones!\nWaiting for players to join...";
-
-        readBuffer = ByteBuffer.allocate(256);
-        writeBuffer = ByteBuffer.allocate(256);
-        bufferBytes = new byte[256];
     }
 
     public static IpPortAddress getAddressesAndCreateChannelAsWellAsSelector()
     {
         IpPortAddress result = new IpPortAddress();
-
+        //Construct channel
         try
         {
             result.channel = DatagramChannel.open();
@@ -61,63 +52,62 @@ public class GameServerLobbyLevel extends LoadingLevel
         }
         Utils.aassert(result.channel != null);
         DatagramSocket socket = result.channel.socket();
+        Utils.aassert(socket != null);
         try
         {
-            Utils.aassert(socket != null);
-            socket.connect(new InetSocketAddress("google.com", localPort));
+            socket.bind(null);
+        }
+        catch(SocketException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        //Get local address
+        InetSocketAddress inetAddressLocal = new InetSocketAddress("8.8.8.8", localPort);
+        try
+        {
+            result.channel.connect(inetAddressLocal);
         }
         catch(Exception e)
         {
             Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
-        //result.ipAddress = socket.getInetAddress().getHostAddress();
-        result.port = socket.getPort();
-        result.localIpAddress = socket.getLocalAddress().getHostAddress();
-        result.localPortHere = socket.getLocalPort();
-        socket.disconnect();
-        socket.close();
-        try
-        {
-            result.channel.close();
-        }
-        catch(IOException e)
-        {
-            Utils.log(e.getMessage());
-            Utils.invalidCodePath();
-        }
-        try
-        {
-            result.ipAddress = Ipify.getPublicIp(true);
-        }
-        catch(IOException e)
-        {
-            Utils.log(e.getMessage());
-            Utils.invalidCodePath();
-        }
-        Utils.aassert(result.ipAddress != null);
+        result.localIpAddress = socket.getLocalAddress();
+        result.port = socket.getLocalPort();
 
+        socket.disconnect();
         try
         {
-            result.channel = DatagramChannel.open();
+            result.channel.disconnect();
         }
         catch(IOException e)
         {
             Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
-        Utils.aassert(result.channel != null);
-        socket = result.channel.socket();
+        //Get public address
+        InetSocketAddress inetAddressGoogle = new InetSocketAddress("google.com", localPort);
         try
         {
-            socket.bind(new InetSocketAddress(result.localIpAddress, localPort));
+            result.channel.connect(inetAddressGoogle);
         }
         catch(Exception e)
         {
             Utils.log(e.getMessage());
             Utils.invalidCodePath();
         }
-        Utils.aassert(socket.isBound());
+        result.ipAddress = socket.getLocalAddress();
+        try
+        {
+            result.channel.disconnect();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
+        //Configure blocking
         try
         {
             result.channel.configureBlocking(false);
@@ -128,7 +118,7 @@ public class GameServerLobbyLevel extends LoadingLevel
             Utils.invalidCodePath();
         }
         Utils.aassert(!result.channel.isBlocking());
-
+        //Construct selector
         try
         {
             result.selector = Selector.open();
@@ -152,109 +142,6 @@ public class GameServerLobbyLevel extends LoadingLevel
         return result;
     }
 
-    public static float select(Selector selector, ByteBuffer readBuffer, ByteBuffer writeBuffer,
-                               byte[] bufferBytes, float packetInterval, String toIp, int toPort, float dt)
-    {
-        int nToSelect = 0;
-        try
-        {
-            nToSelect = selector.selectNow();
-        }
-        catch(Exception e)
-        {
-            Utils.log(e.getMessage());
-            Utils.invalidCodePath();
-        }
-
-        if(nToSelect > 0)
-        {
-            Set<SelectionKey> selectionKeySet = selector.selectedKeys();
-
-            for(Iterator<SelectionKey> iterator = selectionKeySet.iterator(); iterator.hasNext(); )
-            {
-                SelectionKey it = iterator.next();
-
-                if(it.isReadable())
-                {
-                    readBuffer.clear();
-
-                    //NOTE: The channel really has to be the channel of the class, because we just
-                    //registered one!
-                    DatagramChannel channel = (DatagramChannel) it.channel();
-
-                    InetSocketAddress address = null;
-                    try
-                    {
-                        address = (InetSocketAddress) channel.receive(readBuffer);
-                    }
-                    catch(Exception e)
-                    {
-                        Utils.log(e.getMessage());
-                        Utils.invalidCodePath();
-                    }
-                    Utils.aassert(address != null);
-
-                    int remaing = readBuffer.remaining();
-                    if(remaing > 0)
-                    {
-                        Utils.log("Received a packet from:" + address.getHostName());
-
-                        readBuffer.get(bufferBytes, 0, remaing);
-                        Utils.log(Arrays.toString(bufferBytes));
-                    }
-                }
-                if(it.isWritable())
-                {
-                    if(packetInterval == 0.0f)
-                    {
-                        writeBuffer.clear();
-
-                        //NOTE: The channel really has to be the channel of the class, because we just
-                        //registered one!
-                        DatagramChannel channel = (DatagramChannel) it.channel();
-
-                        InetAddress inetAddress = null;
-                        try
-                        {
-                            inetAddress = InetAddress.getByName(toIp);
-                        }
-                        catch(Exception e)
-                        {
-                            Utils.log(e.getMessage());
-                            Utils.invalidCodePath();
-                        }
-                        Utils.aassert(inetAddress != null);
-                        InetSocketAddress socketAddress = new InetSocketAddress(inetAddress, toPort);
-
-                        writeBuffer.put("HELO".getBytes());
-                        writeBuffer.flip();
-
-                        try
-                        {
-                            channel.send(writeBuffer, socketAddress);
-                        }
-                        catch(Exception e)
-                        {
-                            Utils.log(e.getMessage());
-                            Utils.invalidCodePath();
-                        }
-
-                        Utils.log("We send a msg!");
-                    }
-
-                    packetInterval += dt;
-
-                    if(packetInterval >= maxPacketInterval)
-                        packetInterval = 0.0f;
-                }
-
-                iterator.remove();
-            }
-        }
-
-        return packetInterval;
-    }
-
     @Override
     public void create()
     {
@@ -263,14 +150,14 @@ public class GameServerLobbyLevel extends LoadingLevel
         showingUpInDB = false;
         isClientConnecting = false;
 
-        //TODO: Think about not getting the address every time, just once on startup!
-
         IpPortAddress ipPortAddress = getAddressesAndCreateChannelAsWellAsSelector();
         channel = ipPortAddress.channel;
         selector = ipPortAddress.selector;
 
-        NativeBridge.registerNewServer(ipPortAddress.ipAddress + "_" + ipPortAddress.port + "-"
-                + ipPortAddress.localIpAddress);
+        networkManager = new NetworkManager(channel, selector);
+
+        NativeBridge.registerNewServer(ipPortAddress.ipAddress.getHostAddress() + "_" + ipPortAddress.port + "-"
+                + ipPortAddress.localIpAddress.getHostAddress());
     }
 
     @Override
@@ -322,20 +209,75 @@ public class GameServerLobbyLevel extends LoadingLevel
                 int posUnderscore = clientIpAddress.indexOf('_');
                 int posPipe = clientIpAddress.indexOf('-');
 
-                clientExternalIp = clientIpAddress.substring(0, posUnderscore);
-                clientExternalPort = clientIpAddress.substring(posUnderscore + 1, posPipe);
-                clientLocalIp = clientIpAddress.substring(posPipe + 1);
+                String sClientExternalIp = clientIpAddress.substring(0, posUnderscore);
+                clientExternalPort = Integer.valueOf(clientIpAddress.substring(posUnderscore + 1, posPipe));
+                String sClientLocalIp = clientIpAddress.substring(posPipe + 1);
+
+                try
+                {
+                    clientExternalIp = InetAddress.getByName(sClientExternalIp);
+                }
+                catch(UnknownHostException e)
+                {
+                    Utils.log(e.getMessage());
+                    Utils.invalidCodePath();
+                }
+                try
+                {
+                    clientLocalIp = InetAddress.getByName(sClientLocalIp);
+                }
+                catch(UnknownHostException e)
+                {
+                    Utils.log(e.getMessage());
+                    Utils.invalidCodePath();
+                }
+
+                SocketAddress connectSocketAddress = new InetSocketAddress(clientLocalIp, clientExternalPort);
+                try
+                {
+                    channel.connect(connectSocketAddress);
+                }
+                catch(Exception e)
+                {
+                    Utils.log(e.getMessage());
+                    Utils.invalidCodePath();
+                }
 
                 msg = "Client found! Lets connect to it!";
             }
         }
         else
         {
-            String toIp = clientExternalIp;
-            int toPort = localPort;
+            networkManager.select(clientLocalIp, clientExternalPort, dt);
 
-            packetInterval = select(selector, readBuffer, writeBuffer, bufferBytes, packetInterval, toIp,
-                    toPort, dt);
+            while(networkManager.hasNext())
+            {
+                Object o = networkManager.read();
+                if(o != null)
+                {
+                    if(o instanceof String)
+                    {
+                        String s = (String) o;
+                        msg = ("We got back a string:" + s);
+                    }
+                    else
+                    {
+                        msg = ("Unexpected reading of class: " + o.getClass().toString() + " ;;; "
+                                + o.toString());
+                        //Utils.invalidCodePath();
+                    }
+                }
+                else
+                    break;
+            }
+
+            writeTimer += dt;
+            if(writeTimer >= maxWriteTimer)
+            {
+                writeTimer = 0.0f;
+
+                networkManager.send("HELO");
+            }
         }
     }
 
@@ -409,12 +351,29 @@ public class GameServerLobbyLevel extends LoadingLevel
     }
 
     @Override
+    public void dispose()
+    {
+        super.dispose();
+
+        networkManager.dispose();
+    }
+
+    @Override
     public void pause()
     {
         super.pause();
 
         unregisterDBAndListener();
 
+        try
+        {
+            channel.disconnect();
+        }
+        catch(IOException e)
+        {
+            Utils.log(e.getMessage());
+            Utils.invalidCodePath();
+        }
         try
         {
             channel.close();

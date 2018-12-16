@@ -108,12 +108,15 @@ public class Utils
         return result;
     }
 
-    public static void checkNetworkConnection(GameStart screenManager, Vector2 worldSize)
+    public static boolean checkNetworkConnection(GameStart screenManager, Vector2 worldSize)
     {
-        if(!networkConnection())
+        boolean result = networkConnection();
+        if(!result)
         {
             Utils.logBreak("No Network connection!", screenManager, worldSize);
         }
+
+        return result;
     }
 }
 

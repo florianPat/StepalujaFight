@@ -16,6 +16,7 @@ public class AndroidLauncher extends AndroidApplication
 	{
 		super.onCreate(savedInstanceState);
 
+        System.loadLibrary("gnustl_shared");
 		System.loadLibrary("FirebaseGameInteractor");
 
 		final Vector2 worldSize = new Vector2(900.0f, 600.0f);
