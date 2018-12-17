@@ -6,6 +6,7 @@ import com.badlogic.gdx.Preferences;
 public class GameStart extends Game
 {
     private boolean googlePlayServicesAvailable;
+    private boolean hasInternetAccess;
 
     public GameStart(boolean servicesAvailable)
     {
@@ -14,27 +15,35 @@ public class GameStart extends Game
 
     public void startGame()
     {
-        NativeBridge.firebaseInit();
-
-        Preferences prefs = Utils.getGlobalPreferences();
-        if(!prefs.contains("username"))
+        if(hasInternetAccess)
         {
-            Utils.log("create new user!");
-            setScreen(new SignUpAnonymouslyLevel(this));
+            NativeBridge.firebaseInit();
+
+            Preferences prefs = Utils.getGlobalPreferences();
+            if(!prefs.contains("username"))
+            {
+                Utils.log("create new user!");
+                setScreen(new SignUpAnonymouslyLevel(this));
+            }
+            else
+            {
+                Utils.log("sign in");
+                setScreen(new LogInLevel(this));
+            }
         }
         else
         {
-            Utils.log("sign in");
-            setScreen(new LogInLevel(this));
+            Utils.log("singeplayer!");
+            setScreen(new MenuLevel(this, MenuLevel.LevelComponentName.MainMenu));
         }
     }
 
     @Override
     public void create()
     {
-        //NOTE: Set first level!
-        if(!Utils.checkNetworkConnection(this)) return;
+        hasInternetAccess = Utils.networkConnection();
 
+        //NOTE: Set first level!
         if(!googlePlayServicesAvailable)
         {
             setScreen(new ServicesAvaliableChecker(this));
@@ -53,5 +62,10 @@ public class GameStart extends Game
         {
             screen.dispose();
         }
+    }
+
+    public boolean hasInternetAccess()
+    {
+        return hasInternetAccess;
     }
 }

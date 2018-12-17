@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 public class OnScreenControls extends InputAdapter
 {
-    private final int VIEWPORT_SIZE = 400;
+    private final int VIEWPORT_SIZE = 350;
     private final int BUTTON_RADIUS = 32;
 
     public ExtendViewport viewport;

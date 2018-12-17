@@ -79,6 +79,9 @@ class MenuBtnsBackComponent extends MenuComponent
         {
             renderer.rect(btn.getX(), btn.getY(), btn.getWidth(), btn.getHeight());
         }
+
+        renderer.rect(backBtn.getX(), backBtn.getY(), backBtn.getWidth(), backBtn.getHeight());
+
         renderer.end();
     }
 

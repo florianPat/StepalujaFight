@@ -78,7 +78,7 @@ public class Utils
         return Gdx.app.getPreferences("preferences");
     }
 
-    private static boolean networkConnection()
+    public static boolean networkConnection()
     {
         boolean result = true;
 

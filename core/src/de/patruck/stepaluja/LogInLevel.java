@@ -17,29 +17,8 @@ public class LogInLevel extends Level
 
         if(NativeBridge.existsCurrentUser())
         {
-        /*switch (NativeBridge.initializationPhase)
-        {
-            case 0:
-            {
-                return;
-            }
-            case 1:
-            {
-                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
-                break;
-            }
-            case -1:
-            {
-                Utils.logBreak("Log in failed!");
-                break;
-            }
-            default:
-            {
-                Utils.invalidCodePath();
-                break;
-            }
-        }*/
-            screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
+            screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu,
+                    NativeBridge.isCurrentUserAnonymous()));
         }
         else
         {

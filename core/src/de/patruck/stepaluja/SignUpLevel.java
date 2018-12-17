@@ -47,7 +47,7 @@ public class SignUpLevel extends Level
             showingErrorTime += dt;
             if(showingErrorTime >= 2.0f)
             {
-                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
+                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu, false));
             }
         }
         else if(showingError)

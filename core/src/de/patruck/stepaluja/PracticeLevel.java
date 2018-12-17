@@ -81,7 +81,6 @@ public class PracticeLevel extends TileMapLevel
                         MenuLevel.LevelComponentName.MainMenu));
             }
         };
-
         eventManager.addListener(DeadEventData.eventId, Utils.getDelegateFromFunction(deadFlaggedFunction));
     }
 

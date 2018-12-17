@@ -36,8 +36,11 @@ public class PlayMenuComponent extends MenuBtnsBackComponent
         }
         else if(btns[1].contains(viewportPosition))
         {
-            screenManager.setScreen(new MenuLevel(screenManager,
-                    MenuLevel.LevelComponentName.ChooseCharacterMenu, "O"));
+            if(!screenManager.hasInternetAccess())
+                Utils.logBreak("No Network connection!", screenManager);
+            else
+                screenManager.setScreen(new MenuLevel(screenManager,
+                        MenuLevel.LevelComponentName.ChooseCharacterMenu, "O"));
         }
 
         return super.touchUp(screenX, screenY, pointer, button);

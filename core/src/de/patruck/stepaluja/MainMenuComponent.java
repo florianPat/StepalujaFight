@@ -11,14 +11,37 @@ class MainMenuComponent extends MenuComponent
 {
     private Rectangle btns[] = new Rectangle[4];
     private Rectangle convertAnToPerBtn;
-    private boolean isAnonymous;
+    static private boolean isAnonymous;
+    static boolean initialized = false;
     private BitmapFont font;
 
     public MainMenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatchIn)
     {
         super(viewport, screenManager, spriteBatchIn);
-        isAnonymous = NativeBridge.isCurrentUserAnonymous();
-        font = Utils.getFont();
+
+        if(screenManager.hasInternetAccess())
+        {
+            Utils.aassert(initialized);
+            //isAnonymous = NativeBridge.isCurrentUserAnonymous();
+            font = Utils.getFont();
+        }
+    }
+
+    public MainMenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatchIn,
+                             Object isAnonymousIn)
+    {
+        super(viewport, screenManager, spriteBatchIn);
+
+        initialized = true;
+
+        Utils.aassert(isAnonymousIn instanceof Boolean);
+
+        isAnonymous = (Boolean) isAnonymousIn;
+
+        Utils.aassert(isAnonymous == NativeBridge.isCurrentUserAnonymous());
+
+        if(screenManager.hasInternetAccess())
+            font = Utils.getFont();
     }
 
     public void resetBtns()
@@ -121,7 +144,10 @@ class MainMenuComponent extends MenuComponent
         }
         else if(btns[1].contains(viewportPosition))
         {
-            screenManager.setScreen(new MenuLevel(screenManager,
+            if(!screenManager.hasInternetAccess())
+                Utils.logBreak("No Network connection!", screenManager);
+            else
+                screenManager.setScreen(new MenuLevel(screenManager,
                     MenuLevel.LevelComponentName.PartyMenu));
         }
         else if(btns[2].contains(viewportPosition))

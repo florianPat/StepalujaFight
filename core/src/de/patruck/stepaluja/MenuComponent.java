@@ -26,7 +26,6 @@ abstract class MenuComponent extends InputAdapter
                          Object componentArg)
     {
         this(viewport, screenManager);
-
         this.componentArg = componentArg;
     }
 
@@ -34,6 +33,14 @@ abstract class MenuComponent extends InputAdapter
     {
         this(viewport, screenManager);
         this.spriteBatch = spriteBatch;
+    }
+
+    public MenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatch,
+                         Object componentArg)
+    {
+        this(viewport, screenManager);
+        this.spriteBatch = spriteBatch;
+        this.componentArg = componentArg;
     }
 
     public void setImgSize(Vector2 imgSizeIn)

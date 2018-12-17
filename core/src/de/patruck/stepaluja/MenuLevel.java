@@ -48,7 +48,10 @@ public class MenuLevel extends Level
             case MainMenu:
             {
                 menuTexName = "menu/Titelbild.jpg";
-                menuComponent = new MainMenuComponent(viewport, screenManager, spriteBatch);
+                if(menuComponentArg != null)
+                    menuComponent = new MainMenuComponent(viewport, screenManager, spriteBatch, menuComponentArg);
+                else
+                    menuComponent = new MainMenuComponent(viewport, screenManager, spriteBatch);
                 break;
             }
             case CreditsMenu:

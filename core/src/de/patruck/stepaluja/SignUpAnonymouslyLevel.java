@@ -36,7 +36,8 @@ public class SignUpAnonymouslyLevel extends LoadingLevel
                 preferences.putString("username", username);
                 preferences.flush();
 
-                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu));
+                screenManager.setScreen(new MenuLevel(screenManager, MenuLevel.LevelComponentName.MainMenu,
+                        true));
                 break;
             }
             case -1:
