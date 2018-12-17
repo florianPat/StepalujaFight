@@ -15,11 +15,17 @@ public class GameStart extends Game
 
     public void startGame()
     {
+        Preferences prefs = Utils.getGlobalPreferences();
+        if(!prefs.contains("highscore"))
+        {
+            prefs.putInteger("highscore", -1);
+            prefs.flush();
+        }
+
         if(hasInternetAccess)
         {
             NativeBridge.firebaseInit();
 
-            Preferences prefs = Utils.getGlobalPreferences();
             if(!prefs.contains("username"))
             {
                 Utils.log("create new user!");

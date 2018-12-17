@@ -179,7 +179,6 @@ public class OnScreenControls extends InputAdapter
 
     public void render()
     {
-        viewport.apply();
         renderer.setProjectionMatrix(viewport.getCamera().combined);
 
         renderer.begin();

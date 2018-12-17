@@ -1,16 +1,28 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 public class PlayMenuComponent extends MenuBtnsBackComponent
 {
-    public PlayMenuComponent(ExtendViewport viewport, GameStart screenManager)
+    private BitmapFont font;
+    private int highscore;
+
+    public PlayMenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatch)
     {
-        super(viewport, screenManager);
+        super(viewport, screenManager, spriteBatch);
 
         btns = new Rectangle[2];
+
+        font = Utils.getFont();
+
+        Preferences preferences = Utils.getGlobalPreferences();
+        Utils.aassert(preferences.contains("highscore"));
+        highscore = preferences.getInteger("highscore");
     }
 
     @Override
@@ -44,5 +56,17 @@ public class PlayMenuComponent extends MenuBtnsBackComponent
         }
 
         return super.touchUp(screenX, screenY, pointer, button);
+    }
+
+    @Override
+    public void render()
+    {
+        Utils.aassert(spriteBatch != null);
+
+        if(highscore != -1)
+        {
+            font.draw(spriteBatch, "Highest highscore: " + highscore,
+                    viewport.getWorldWidth() * 0.3f, viewport.getWorldHeight() * 0.15f);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -19,6 +20,12 @@ class MenuBtnsBackComponent extends MenuComponent
                                  Object menuArg)
     {
         super(viewport, screenManager, menuArg);
+    }
+
+    public MenuBtnsBackComponent(ExtendViewport viewport, GameStart screenManager,
+                                 SpriteBatch spriteBatch)
+    {
+        super(viewport, screenManager, spriteBatch);
     }
 
     public void resetBtns()

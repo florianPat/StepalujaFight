@@ -17,7 +17,6 @@ public class HeartComponent
     private Texture[] heartTextures;
     private Sprite[] heartSprites;
     public ExtendViewport viewport;
-    private ExtendViewport gameViewport;
     private final int VIEWPORT_SIZE = 400;
     private SpriteBatch spriteBatch;
     private int n;
@@ -67,7 +66,6 @@ public class HeartComponent
 
     public void draw()
     {
-        viewport.apply();
         spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
         spriteBatch.begin();
 

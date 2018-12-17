@@ -424,6 +424,8 @@ public class OpponentComponent extends AnimationComponent
             getHit = false;
             respawn = true;
             hitPoints = 1.0f;
+
+            eventManager.TriggerEvent(new DeadOpponentEventData());
         }
 
         sprite.setTexture(current);

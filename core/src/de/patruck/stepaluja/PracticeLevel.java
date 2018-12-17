@@ -1,10 +1,16 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.Preferences;
+
 public class PracticeLevel extends TileMapLevel
 {
     private final int opponents = 4;
     private Function deadFlaggedFunction;
+    private Function deadOpponnentFunction;
+    //TODO: Maybe this needs some kind of manager and stuff like the GameObjectManager...
+    //But time is running, so the dirty way must handle it :/
     private HeartComponent hc;
+    private HighscoreComponent highC;
     private char playerNumber;
 
     public PracticeLevel(GameStart screenManager, char player)
@@ -21,6 +27,9 @@ public class PracticeLevel extends TileMapLevel
 
         hc.viewport.update(width, height, true);
         hc.recalculateHeartPos();
+
+        highC.viewport.update(width, height, true);
+        highC.recalculateHighscorePosition();
     }
 
     private void createPlayer(String playerName, int n)
@@ -50,6 +59,8 @@ public class PracticeLevel extends TileMapLevel
     {
         super.create();
 
+        highC = new HighscoreComponent(spriteBatch);
+
         char opponentNumber = playerNumber == '0' ? '1' : '0';
         String[] textureAtlasOpponent = new String[11];
         String opponentName = "player" + opponentNumber;
@@ -76,12 +87,33 @@ public class PracticeLevel extends TileMapLevel
                 int playerId = event.getPlayerId();
 
                 Utils.log("Player " + playerId + " is dead!");
+
+                Preferences preferences = Utils.getGlobalPreferences();
+                Utils.aassert(preferences.contains("highscore"));
+                if(preferences.getInteger("highscore") < highC.highscore)
+                {
+                    preferences.putInteger("highscore", highC.highscore);
+                    preferences.flush();
+                }
+
                 // screenManager.setScreen(new GameOverScreen(playerId));
                 screenManager.setScreen(new MenuLevel(screenManager,
                         MenuLevel.LevelComponentName.MainMenu));
             }
         };
         eventManager.addListener(DeadEventData.eventId, Utils.getDelegateFromFunction(deadFlaggedFunction));
+
+        deadOpponnentFunction = new Function()
+        {
+            @Override
+            public void Event(EventData eventData)
+            {
+                Utils.aassert(eventData instanceof DeadOpponentEventData);
+
+                ++highC.highscore;
+            }
+        };
+        eventManager.addListener(DeadOpponentEventData.eventId, Utils.getDelegateFromFunction(deadOpponnentFunction));
     }
 
     @Override
@@ -90,5 +122,7 @@ public class PracticeLevel extends TileMapLevel
         super.render(dt);
 
         hc.draw();
+
+        highC.draw();
     }
 }

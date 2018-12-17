@@ -23,23 +23,16 @@ abstract class MenuComponent extends InputAdapter
     }
 
     public MenuComponent(ExtendViewport viewport, GameStart screenManager,
+                         SpriteBatch spriteBatchIn)
+    {
+        this(viewport, screenManager);
+        spriteBatch = spriteBatchIn;
+    }
+
+    public MenuComponent(ExtendViewport viewport, GameStart screenManager,
                          Object componentArg)
     {
         this(viewport, screenManager);
-        this.componentArg = componentArg;
-    }
-
-    public MenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatch)
-    {
-        this(viewport, screenManager);
-        this.spriteBatch = spriteBatch;
-    }
-
-    public MenuComponent(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatch,
-                         Object componentArg)
-    {
-        this(viewport, screenManager);
-        this.spriteBatch = spriteBatch;
         this.componentArg = componentArg;
     }
 

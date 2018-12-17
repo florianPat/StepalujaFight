@@ -128,6 +128,7 @@ class MainMenuComponent extends MenuComponent
     {
         if(isAnonymous)
         {
+            Utils.aassert(spriteBatch != null);
             font.draw(spriteBatch, "Make a real account here!!", 0.0f, font.getLineHeight());
         }
     }

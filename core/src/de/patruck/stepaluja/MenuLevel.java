@@ -75,7 +75,7 @@ public class MenuLevel extends Level
             case PlayMenu:
             {
                 menuTexName = "menu/Spielen.jpg";
-                menuComponent = new PlayMenuComponent(viewport, screenManager);
+                menuComponent = new PlayMenuComponent(viewport, screenManager, spriteBatch);
                 break;
             }
             case ChooseCharacterMenu:
