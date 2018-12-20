@@ -44,7 +44,7 @@ public class PlayMenuComponent extends MenuBtnsBackComponent
         if(btns[0].contains(viewportPosition))
         {
             screenManager.setScreen(new MenuLevel(screenManager,
-                    MenuLevel.LevelComponentName.ChooseCharacterMenu, "U"));
+                    MenuLevel.LevelComponentName.LevelSelectMenu, "U"));
         }
         else if(btns[1].contains(viewportPosition))
         {
@@ -52,7 +52,7 @@ public class PlayMenuComponent extends MenuBtnsBackComponent
                 Utils.logBreak("No Network connection!", screenManager);
             else
                 screenManager.setScreen(new MenuLevel(screenManager,
-                        MenuLevel.LevelComponentName.ChooseCharacterMenu, "O"));
+                        MenuLevel.LevelComponentName.LevelSelectMenu, "O"));
         }
 
         return super.touchUp(screenX, screenY, pointer, button);

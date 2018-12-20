@@ -15,7 +15,8 @@ public class MenuLevel extends Level
         SettingsMenu,
         PartyMenu,
         PlayMenu,
-        ChooseCharacterMenu
+        ChooseCharacterMenu,
+        LevelSelectMenu
     }
 
     private Texture menuTex;
@@ -83,6 +84,14 @@ public class MenuLevel extends Level
                 menuTexName = "menu/SpielfigurenAuswahl.jpg";
                 Utils.aassert(menuComponentArg != null);
                 menuComponent = new ChooseCharacterMenuComponent(viewport, screenManager,
+                        menuComponentArg);
+                break;
+            }
+            case LevelSelectMenu:
+            {
+                menuTexName = "menu/MapAuswahl.jpg";
+                Utils.aassert(menuComponentArg != null);
+                menuComponent = new LevelSelectMenuComponent(viewport, screenManager,
                         menuComponentArg);
                 break;
             }

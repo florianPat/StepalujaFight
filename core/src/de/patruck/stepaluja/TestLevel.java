@@ -7,9 +7,9 @@ public class TestLevel extends TileMapLevel
     private HeartComponent[] heartComponents;
     private char[] playerNumbers;
 
-    public TestLevel(GameStart screenManager, char player0, char player1)
+    public TestLevel(GameStart screenManager, char player0, char player1, String map)
     {
-        super("maps/map2.txt", screenManager);
+        super(map, screenManager);
 
         playerNumbers = new char[playerCount];
         playerNumbers[0] = player0;

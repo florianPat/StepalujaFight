@@ -108,7 +108,7 @@ public class OpponentComponent extends AnimationComponent
         collider = new Collider(rect);
         ArrayList<String> s = new ArrayList<String>();
         s.add("Ground");
-        body = new Body(new Vector2(MathUtils.random(minX, maxX), mapHeight - 128), "Opponent" + n, collider, s, false, false);
+        body = new Body(new Vector2(MathUtils.random(minX, maxX), mapHeight - 146), "Opponent" + n, collider, s, false, false);
         physics.addElement(body);
 
         size = new Vector2(16.0f, 16.0f);
@@ -321,7 +321,7 @@ public class OpponentComponent extends AnimationComponent
                 nJumps = 3;
             }
 
-            if(random > 95)
+            if(random > 99)
             {
                 if(nJumps > 0)
                 {

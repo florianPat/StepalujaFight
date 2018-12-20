@@ -73,6 +73,9 @@ public class Tilemap {
     private Texture stone;
     private Texture lava;
     private Texture water;
+    private Texture sky;
+    private Texture caveTransition;
+    private Texture cave;
     private Physics physics;
 
     /**
@@ -89,6 +92,9 @@ public class Tilemap {
         assetManager.load("tileset/stone.jpg", Texture.class);
         assetManager.load("tileset/lava.jpg", Texture.class);
         assetManager.load("tileset/water.jpg", Texture.class);
+        assetManager.load("tileset/sky.jpg", Texture.class);
+        assetManager.load("tileset/caveTransition.jpg", Texture.class);
+        assetManager.load("tileset/cave.jpg", Texture.class);
 
         assetManager.finishLoading();
 
@@ -97,6 +103,9 @@ public class Tilemap {
         stone = assetManager.get("tileset/stone.jpg");
         lava = assetManager.get("tileset/lava.jpg");
         water = assetManager.get("tileset/water.jpg");
+        sky = assetManager.get("tileset/sky.jpg");
+        caveTransition = assetManager.get("tileset/caveTransition.jpg");
+        cave = assetManager.get("tileset/cave.jpg");
 
         try
         {
@@ -154,6 +163,18 @@ public class Tilemap {
                     karte[i][j] = new Tile(lava, false, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }
                 else if(zeile.charAt(j) == '4')
+                {
+                    karte[i][j] = new Tile(water, false, new Vector2(j * TILE_SIZE, i * TILE_SIZE), body);
+                }
+                else if(zeile.charAt(j) == '5')
+                {
+                    karte[i][j] = new Tile(cave, false, new Vector2(j * TILE_SIZE, i * TILE_SIZE), body);
+                }
+                else if(zeile.charAt(j) == '6')
+                {
+                    karte[i][j] = new Tile(caveTransition, false, new Vector2(j * TILE_SIZE, i * TILE_SIZE), body);
+                }
+                else if(zeile.charAt(j) == '7')
                 {
                     karte[i][j] = new Tile(water, false, new Vector2(j*TILE_SIZE, i*TILE_SIZE), body);
                 }

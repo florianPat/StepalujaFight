@@ -46,9 +46,35 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
     {
         Utils.aassert(componentArg instanceof String);
         String s = (String) componentArg;
+
+        String map = "";
+        switch(s.charAt(1))
+        {
+            case 'E':
+            {
+                map = "maps/easy.txt";
+                break;
+            }
+            case 'M':
+            {
+                map = "maps/middle.txt";
+                break;
+            }
+            case 'H':
+            {
+                map = "maps/hard.txt";
+                break;
+            }
+            default:
+            {
+                Utils.invalidCodePath();
+                break;
+            }
+        }
+
         switch(s.length())
         {
-            case 1:
+            case 2:
             {
                 char gameMode = s.charAt(0);
 
@@ -56,12 +82,15 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
                 {
                     case 'U':
                     {
-                        screenManager.setScreen(new PracticeLevel(screenManager, playerId));
+                        screenManager.setScreen(new PracticeLevel(screenManager,
+                                playerId, map));
                         break;
                     }
                     case 'O':
                     {
-                        screenManager.setScreen(new RandomMatchmakeLevel(screenManager));
+                        screenManager.setScreen(new MenuLevel(screenManager,
+                                MenuLevel.LevelComponentName.ChooseCharacterMenu,
+                                s + playerId));
                         break;
                     }
                     default:
@@ -70,6 +99,12 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
                         break;
                     }
                 }
+                break;
+            }
+            case 3:
+            {
+                char player0 = s.charAt(2);
+                screenManager.setScreen(new TestLevel(screenManager, player0, playerId, map));
                 break;
             }
             default:

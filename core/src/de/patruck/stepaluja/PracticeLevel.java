@@ -13,9 +13,9 @@ public class PracticeLevel extends TileMapLevel
     private HighscoreComponent highC;
     private char playerNumber;
 
-    public PracticeLevel(GameStart screenManager, char player)
+    public PracticeLevel(GameStart screenManager, char player, String map)
     {
-        super("maps/map2.txt", screenManager);
+        super(map, screenManager);
 
         playerNumber = player;
     }
