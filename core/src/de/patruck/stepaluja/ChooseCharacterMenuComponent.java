@@ -48,49 +48,25 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
         String s = (String) componentArg;
 
         String map = "";
-        switch(s.charAt(1))
-        {
-            case 'E':
-            {
-                map = "maps/easy.txt";
-                break;
-            }
-            case 'M':
-            {
-                map = "maps/middle.txt";
-                break;
-            }
-            case 'H':
-            {
-                map = "maps/hard.txt";
-                break;
-            }
-            default:
-            {
-                Utils.invalidCodePath();
-                break;
-            }
-        }
-
         switch(s.length())
         {
             case 2:
             {
-                char gameMode = s.charAt(0);
-
-                switch(gameMode)
+                switch(s.charAt(1))
                 {
-                    case 'U':
+                    case 'E':
                     {
-                        screenManager.setScreen(new PracticeLevel(screenManager,
-                                playerId, map));
+                        map = "maps/easy.txt";
                         break;
                     }
-                    case 'O':
+                    case 'M':
                     {
-                        screenManager.setScreen(new MenuLevel(screenManager,
-                                MenuLevel.LevelComponentName.ChooseCharacterMenu,
-                                s + playerId));
+                        map = "maps/middle.txt";
+                        break;
+                    }
+                    case 'H':
+                    {
+                        map = "maps/hard.txt";
                         break;
                     }
                     default:
@@ -99,12 +75,38 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
                         break;
                     }
                 }
-                break;
             }
-            case 3:
+            case 1:
             {
-                char player0 = s.charAt(2);
-                screenManager.setScreen(new TestLevel(screenManager, player0, playerId, map));
+                char gameMode = s.charAt(0);
+
+                switch(gameMode)
+                {
+                    case 'U':
+                    {
+                        Utils.aassert(!map.equals(""));
+                        screenManager.setScreen(new PracticeLevel(screenManager,
+                                playerId, map));
+                        break;
+                    }
+                    case 'O':
+                    {
+                        screenManager.setScreen(new RandomMatchmakeLevel(screenManager, playerId));
+                        break;
+                    }
+                    case 'P':
+                    {
+                        screenManager.setScreen(new MenuLevel(screenManager,
+                                MenuLevel.LevelComponentName.NearbyMultiplayerEnter,
+                                playerId));
+                        break;
+                    }
+                    default:
+                    {
+                        Utils.invalidCodePath();
+                        break;
+                    }
+                }
                 break;
             }
             default:

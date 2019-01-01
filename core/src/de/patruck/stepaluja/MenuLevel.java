@@ -16,7 +16,8 @@ public class MenuLevel extends Level
         PartyMenu,
         PlayMenu,
         ChooseCharacterMenu,
-        LevelSelectMenu
+        LevelSelectMenu,
+        NearbyMultiplayerEnter
     }
 
     private Texture menuTex;
@@ -92,6 +93,14 @@ public class MenuLevel extends Level
                 menuTexName = "menu/MapAuswahl.jpg";
                 Utils.aassert(menuComponentArg != null);
                 menuComponent = new LevelSelectMenuComponent(viewport, screenManager,
+                        menuComponentArg);
+                break;
+            }
+            case NearbyMultiplayerEnter:
+            {
+                menuTexName = "menu/Hintergrundbild.jpg";
+                Utils.aassert(menuComponentArg != null);
+                menuComponent = new NearbyMultiplayerEnter(viewport, screenManager, spriteBatch,
                         menuComponentArg);
                 break;
             }

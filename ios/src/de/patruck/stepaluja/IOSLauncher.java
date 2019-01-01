@@ -13,6 +13,7 @@ public class IOSLauncher extends IOSApplication.Delegate {
     @Override
     protected IOSApplication createApplication() {
 
+        System.loadLibrary("gnustl_shared");
         System.loadLibrary("FirebaseGameInteractor");
 
         firebaseInitIOS();

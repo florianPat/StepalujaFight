@@ -53,7 +53,13 @@ public class LevelSelectMenuComponent extends MenuBtnsBackComponent
         String s = (String) componentArg;
         Utils.aassert(s.length() == 1);
 
-        screenManager.setScreen(new MenuLevel(screenManager,
+        if(s.charAt(0) != 'S')
+            screenManager.setScreen(new MenuLevel(screenManager,
                 MenuLevel.LevelComponentName.ChooseCharacterMenu, s + level));
+        else
+        {
+            //TODO: Server created!
+            Utils.log("server created!");
+        }
     }
 }

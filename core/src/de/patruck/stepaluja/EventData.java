@@ -9,7 +9,7 @@ public abstract class EventData
         this.eventId = eventId;
     }
 
-    public int getEventId()
+    public final int getEventId()
     {
         return eventId;
     }

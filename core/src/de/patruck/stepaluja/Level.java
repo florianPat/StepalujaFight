@@ -29,7 +29,7 @@ public abstract class Level implements Screen
     public abstract void create();
 
     @Override
-    public void show()
+    public final void show()
     {
         viewport = new ExtendViewport(worldSize.x, worldSize.y);
         camera = new OrthographicCamera();

@@ -28,6 +28,12 @@ class MenuBtnsBackComponent extends MenuComponent
         super(viewport, screenManager, spriteBatch);
     }
 
+    public MenuBtnsBackComponent(ExtendViewport viewport, GameStart screenManager,
+                                 SpriteBatch spriteBatch, Object menuArg)
+    {
+        super(viewport, screenManager, spriteBatch, menuArg);
+    }
+
     public void resetBtns()
     {
         backBtn = new Rectangle(0.0f, 0.0f, 40.0f, 15.0f);
@@ -76,7 +82,7 @@ class MenuBtnsBackComponent extends MenuComponent
     }
 
     @Override
-    public void debugRenderBtns()
+    public final void debugRenderBtns()
     {
         renderer.setProjectionMatrix(viewport.getCamera().combined);
 

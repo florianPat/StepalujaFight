@@ -2,11 +2,14 @@ package de.patruck.stepaluja;
 
 public class RandomMatchmakeLevel extends LoadingLevel
 {
-    public RandomMatchmakeLevel(GameStart screenManager)
+    char playerId;
+
+    public RandomMatchmakeLevel(GameStart screenManager, char playerId)
     {
         super(screenManager);
 
         msg = "Looking for open servers to join!";
+        this.playerId = playerId;
     }
 
     @Override

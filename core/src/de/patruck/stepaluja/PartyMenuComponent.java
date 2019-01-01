@@ -30,9 +30,8 @@ public class PartyMenuComponent extends MenuBtnsBackComponent
 
         if(btns[0].contains(viewportPosition))
         {
-            Utils.log("No party here!");
-            //screenManager.setScreen(new MenuLevel(screenManager,
-            //        MenuLevel.LevelComponentName.ChooseCharacterMenu, "P"));
+            screenManager.setScreen(new MenuLevel(screenManager,
+                    MenuLevel.LevelComponentName.ChooseCharacterMenu, "P"));
         }
 
         return super.touchUp(screenX, screenY, pointer, button);

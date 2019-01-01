@@ -25,5 +25,8 @@ public abstract class Component
     public abstract void update(float dt);
     public abstract void draw();
     //public gomSort::SortKey sort() { return gomSort::SortKey{ 0, 0.0f }; }
-    public int getId() { return id; }
+    public final int getId()
+    {
+        return id;
+    }
 }

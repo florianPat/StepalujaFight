@@ -145,10 +145,7 @@ class MainMenuComponent extends MenuComponent
         }
         else if(btns[1].contains(viewportPosition))
         {
-            if(!screenManager.hasInternetAccess())
-                Utils.logBreak("No Network connection!", screenManager);
-            else
-                screenManager.setScreen(new MenuLevel(screenManager,
+            screenManager.setScreen(new MenuLevel(screenManager,
                     MenuLevel.LevelComponentName.PartyMenu));
         }
         else if(btns[2].contains(viewportPosition))
