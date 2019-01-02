@@ -7,10 +7,19 @@ public class GameStart extends Game
 {
     private boolean googlePlayServicesAvailable;
     private boolean hasInternetAccess;
+    private boolean hasNeabryPermission = false;
+    private PermissionQuery permissionQuery = null;
 
     public GameStart(boolean servicesAvailable)
     {
         googlePlayServicesAvailable = servicesAvailable;
+    }
+
+    public GameStart(boolean servicesAvailable, boolean nearbyAvailable, PermissionQuery query)
+    {
+        googlePlayServicesAvailable = servicesAvailable;
+        hasNeabryPermission = nearbyAvailable;
+        permissionQuery = query;
     }
 
     public void startGame()
@@ -73,5 +82,33 @@ public class GameStart extends Game
     public boolean hasInternetAccess()
     {
         return hasInternetAccess;
+    }
+
+    public boolean hasNeabryPermission()
+    {
+        if(hasNeabryPermission)
+            return true;
+        else if(permissionQuery != null)
+            return permissionQuery.isPermissonGranted();
+        else
+        {
+            Utils.logBreak("I-O-S. What should I say?", this);
+            return false;
+        }
+    }
+
+    public void requestNearbyPermission()
+    {
+        if(permissionQuery == null)
+        {
+            Utils.logBreak("I-O-S. What should I say?", this);
+        }
+
+        permissionQuery.requestPermission();
+    }
+
+    public void nearbyPermissionResult(boolean result)
+    {
+        hasNeabryPermission = result;
     }
 }

@@ -6,9 +6,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 public class ErrorLevel extends Level {
 
-    private BitmapFont font;
-    private float showingErrorTime = 0.0f;
-    private String errorMsg;
+    protected BitmapFont font;
+    protected float showingErrorTime = 0.0f;
+    protected String errorMsg;
 
     public ErrorLevel(GameStart screenManager, String errorMsg)
     {
@@ -27,7 +27,7 @@ public class ErrorLevel extends Level {
     public void render(float dt)
     {
         showingErrorTime += dt;
-        if(showingErrorTime >= 5.0f)
+        if(showingErrorTime >= 4.0f)
         {
             Gdx.app.error("UtilsLogBreak", errorMsg);
         }
