@@ -12,6 +12,7 @@ public class NearbyMultiplayerEnter extends MenuBtnsBackComponent
     private BitmapFont font;
     private NearbyServerList nearbyServerList;
     private String msg = "Create nearby server";
+    private NearbyNetworkManager networkManager;
 
     public NearbyMultiplayerEnter(ExtendViewport viewport, GameStart screenManager, SpriteBatch spriteBatch, Object menuArg)
     {
@@ -25,8 +26,10 @@ public class NearbyMultiplayerEnter extends MenuBtnsBackComponent
         font = Utils.getFont();
 
         nearbyServerList = new NearbyServerList(spriteBatch, font);
+        networkManager = new NearbyNetworkManager(screenManager.nearbyAbstraction);
         Utils.aassert(screenManager.nearbyAbstraction != null);
         screenManager.nearbyAbstraction.listItems = nearbyServerList.listItems;
+        screenManager.nearbyAbstraction.bufferBytesRead = networkManager.getBufferBytesRead();
         screenManager.nearbyAbstraction.startDiscovery();
     }
 
@@ -90,7 +93,8 @@ public class NearbyMultiplayerEnter extends MenuBtnsBackComponent
         {
             screenManager.nearbyAbstraction.stopDiscovery();
             screenManager.nearbyAbstraction.establishConnection(clickedItem.endpointId);
-            screenManager.setScreen(new GameClientNearbyLevel(screenManager, playerId, clickedItem.getMapName()));
+            screenManager.setScreen(new GameClientNearbyLevel(screenManager, playerId,
+                    clickedItem.getMapName(), networkManager));
             return true;
         }
 

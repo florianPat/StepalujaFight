@@ -4,6 +4,7 @@ public class GameServerNearbyLevel extends LoadingLevel
 {
     char playerId;
     char level;
+    NearbyNetworkManager networkManager;
 
     public GameServerNearbyLevel(GameStart screenManager, char playerId, char level)
     {
@@ -11,6 +12,8 @@ public class GameServerNearbyLevel extends LoadingLevel
 
         this.playerId = playerId;
         this.level = level;
+        this.networkManager = new NearbyNetworkManager(screenManager.nearbyAbstraction);
+        screenManager.nearbyAbstraction.bufferBytesRead = this.networkManager.getBufferBytesRead();
 
         msg = "Created server!\nWaiting for players to join...";
     }
@@ -56,7 +59,8 @@ public class GameServerNearbyLevel extends LoadingLevel
         {
             if(screenManager.nearbyAbstraction.connectedFlag == 1)
             {
-                screenManager.setScreen(new TestLevel(screenManager, playerId, playerId, LevelSelectMenuComponent.getLevelName(level)));
+                screenManager.setScreen(new TestLevel(screenManager, playerId, playerId,
+                        LevelSelectMenuComponent.getLevelName(level), networkManager));
             }
             else
             {

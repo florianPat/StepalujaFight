@@ -381,7 +381,10 @@ public class PlayerComponent extends AnimationComponent {
                 eventManager.TriggerEvent(new SmashEventData(numberChar - '0', hittingVec));
             }
             else
+            {
+                //TODO: Send and trigger!
                 eventManager.TriggerEvent(new SmashEventData(playerId == 0 ? 1 : 0, hittingVec));
+            }
         }
 
         //set frame
@@ -541,5 +544,10 @@ public class PlayerComponent extends AnimationComponent {
         {
             camera.position.y = tilemapHeight - minY;
         }
+    }
+
+    public Vector2 getPos()
+    {
+        return new Vector2(sprite.getX(), sprite.getY());
     }
 }

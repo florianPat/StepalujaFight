@@ -33,18 +33,25 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
 	private final int MY_PERMISSION_REQUEST = 1;
 	private int permission = 0;
 	private GameStart gameStart = null;
+    private String endendpointId = null;
 
 	public native static boolean firebaseInitAndroid(Activity activity);
 
     static class ReceiveBytesPayloadListener extends PayloadCallback
     {
+        private byte[] bufferBytesRead = null;
+
+        public ReceiveBytesPayloadListener(byte[] buffer)
+        {
+            bufferBytesRead = buffer;
+        }
+
         @Override
         public void onPayloadReceived(String endpointId, Payload payload)
         {
-            // This always gets the full data of the payload. Will be null if it's not a BYTES
-            // payload. You can check the payload type with payload.getType().
-            byte[] receivedBytes = payload.asBytes();
-            Utils.log("onPayloadReceived: " + Arrays.toString(receivedBytes));
+            Utils.aassert(bufferBytesRead != null);
+            bufferBytesRead = payload.asBytes();
+            Utils.log("onPayloadReceived: " + Arrays.toString(bufferBytesRead));
         }
 
         @Override
@@ -144,6 +151,21 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
                         }
                     });
         }
+
+        @Override
+        public void disconnectFromAllEndpoints()
+        {
+            Nearby.getConnectionsClient(getContext())
+                    .stopAllEndpoints();
+        }
+
+        @Override
+        public void send(byte[] bytes)
+        {
+            Utils.aassert(endendpointId != null);
+            Payload bytesPayload = Payload.fromBytes(bytes);
+            Nearby.getConnectionsClient(getContext()).sendPayload(endendpointId, bytesPayload);
+        }
     };
 
     //NOTE: Just connect if you call startAdvertise and one wants to
@@ -153,7 +175,8 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo)
         {
             // Automatically accept the connection on both sides.
-            Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId, new ReceiveBytesPayloadListener());
+            Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId,
+                    new ReceiveBytesPayloadListener(nearbyAbstraction.bufferBytesRead));
         }
 
         @Override
@@ -164,6 +187,7 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
                 case ConnectionsStatusCodes.STATUS_OK:
                 {
                     nearbyAbstraction.connectedFlag = 1;
+                    endendpointId = endpointId;
                     Utils.log("We're connected! Can now start sending and receiving data.");
                     break;
                 }
@@ -188,6 +212,7 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         {
             Utils.log("We are disconnected!");
             nearbyAbstraction.connectedFlag = 0;
+            endendpointId = null;
         }
     };
 
