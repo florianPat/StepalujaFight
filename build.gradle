@@ -64,7 +64,7 @@ project(":android") {
         implementation 'com.google.firebase:firebase-auth:16.0.5'
         implementation 'com.google.firebase:firebase-database:16.0.3'
         implementation 'com.google.android.gms:play-services-base:16.0.1'
-        
+        implementation 'com.google.android.gms:play-services-nearby:16.0.0'
     }
 }
 

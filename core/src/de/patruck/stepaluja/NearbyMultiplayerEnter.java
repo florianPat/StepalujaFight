@@ -25,10 +25,21 @@ public class NearbyMultiplayerEnter extends MenuBtnsBackComponent
         font = Utils.getFont();
 
         nearbyServerList = new NearbyServerList(spriteBatch, font);
-        for(int i = 0; i < 5; ++i)
-        {
-            nearbyServerList.listItems.add(nearbyServerList.new ListItem(String.valueOf(i), String.valueOf(i)));
-        }
+        Utils.aassert(screenManager.nearbyAbstraction != null);
+        screenManager.nearbyAbstraction.listItems = nearbyServerList.listItems;
+        screenManager.nearbyAbstraction.startDiscovery();
+    }
+
+    @Override
+    public void pause()
+    {
+        screenManager.nearbyAbstraction.stopDiscovery();
+    }
+
+    @Override
+    public void resume()
+    {
+        screenManager.nearbyAbstraction.startDiscovery();
     }
 
     @Override
@@ -74,10 +85,20 @@ public class NearbyMultiplayerEnter extends MenuBtnsBackComponent
         Vector2 viewportPosition = viewport.unproject(new Vector2(screenX, screenY));
 
         nearbyServerList.touchUp(viewportPosition);
+        NearbyServerList.ListItem clickedItem = nearbyServerList.getSelectedItem();
+        if(clickedItem != null)
+        {
+            screenManager.nearbyAbstraction.stopDiscovery();
+            screenManager.nearbyAbstraction.establishConnection(clickedItem.endpointId);
+            screenManager.setScreen(new GameClientNearbyLevel(screenManager, playerId, clickedItem.getMapName()));
+            return true;
+        }
+
         if(btns[1].contains(viewportPosition))
         {
-            //TODO: create server!
-            Utils.log("Create server!");
+            screenManager.nearbyAbstraction.stopDiscovery();
+            screenManager.setScreen(new MenuLevel(screenManager,
+                    MenuLevel.LevelComponentName.LevelSelectMenu, "S" + playerId));
         }
 
         return true;

@@ -9,24 +9,27 @@ import java.util.Vector;
 
 public class NearbyServerList
 {
-    public class ListItem
+    public static class ListItem
     {
-        private String serverName = "ServerNameTest";
-        private String mapName = "MapNameTest";
+        private String serverName;
+        private String mapName;
+        public String endpointId;
 
-        public ListItem()
-        {
-        }
-
-        public ListItem(String serverName, String mapName)
+        public ListItem(String serverName, String mapName, String endpointId)
         {
             this.serverName = serverName;
             this.mapName = mapName;
+            this.endpointId = endpointId;
         }
 
-        public void render(float x, float y, String itemEnd)
+        public void render(float x, float y, String itemEnd, BitmapFont font, SpriteBatch spriteBatch)
         {
             font.draw(spriteBatch, serverName + '\n' + mapName + '\n' + itemEnd, x, y);
+        }
+
+        public String getMapName()
+        {
+            return mapName;
         }
     }
 
@@ -39,6 +42,7 @@ public class NearbyServerList
     private static final int nStrignsInOneListItem = 3;
     private float distanceDragged = 0.0f;
     public Vector<ListItem> listItems;
+    private int selectIndex = -1;
 
     public NearbyServerList(SpriteBatch spriteBatch, BitmapFont font)
     {
@@ -57,14 +61,26 @@ public class NearbyServerList
         rect.height = btnHeight;
     }
 
+    public ListItem getSelectedItem()
+    {
+        if(selectIndex == -1)
+            return null;
+        else
+        {
+            ListItem result = listItems.elementAt(selectIndex);
+            selectIndex = -1;
+            return result;
+        }
+    }
+
     public void touchUp(Vector2 viewportPosition)
     {
         if(rect.contains(viewportPosition) && distanceDragged < 5.0f)
         {
             int firstIndex = (int) localYStart;
             viewportPosition.y -= rect.y;
-            int index = ((int) (viewportPosition.y / getItemHeight())) + firstIndex;
-            //TODO: Select server here!
+            Utils.aassert(selectIndex == -1);
+            selectIndex = ((int) (viewportPosition.y / getItemHeight())) + firstIndex;
         }
         distanceDragged = 0.0f;
         dragPointer = -1;
@@ -137,13 +153,15 @@ public class NearbyServerList
         }
         String itemEnd = builder.toString();
 
+        Utils.log(localYStart + "");
         int index = (int) localYStart;
         float end = ((int) (rect.height / itemHeight)) + index;
+        Utils.aassert(index >= 0 && index <= end);
         for(float i = itemHeight; (index < end) && (index < listItems.size()); i += itemHeight)
         {
             float worldStartY = i + rect.y;
             ListItem it = listItems.get(index++);
-            it.render(worldStartX, worldStartY, itemEnd);
+            it.render(worldStartX, worldStartY, itemEnd, font, spriteBatch);
         }
     }
 }

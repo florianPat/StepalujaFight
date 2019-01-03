@@ -151,6 +151,22 @@ public class MenuLevel extends Level
     }
 
     @Override
+    public void pause()
+    {
+        super.pause();
+
+        menuComponent.pause();
+    }
+
+    @Override
+    public void resume()
+    {
+        super.resume();
+
+        menuComponent.resume();
+    }
+
+    @Override
     public void dispose()
     {
         super.dispose();

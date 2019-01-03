@@ -70,4 +70,12 @@ abstract class MenuComponent extends InputAdapter
     {
         renderer.dispose();
     }
+
+    public void pause()
+    {
+    }
+
+    public void resume()
+    {
+    }
 }

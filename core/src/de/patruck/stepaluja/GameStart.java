@@ -9,17 +9,20 @@ public class GameStart extends Game
     private boolean hasInternetAccess;
     private boolean hasNeabryPermission = false;
     private PermissionQuery permissionQuery = null;
+    public NearbyAbstraction nearbyAbstraction = null;
 
     public GameStart(boolean servicesAvailable)
     {
         googlePlayServicesAvailable = servicesAvailable;
     }
 
-    public GameStart(boolean servicesAvailable, boolean nearbyAvailable, PermissionQuery query)
+    public GameStart(boolean servicesAvailable, boolean nearbyAvailable, PermissionQuery query,
+                     NearbyAbstraction nearbyAbs)
     {
         googlePlayServicesAvailable = servicesAvailable;
         hasNeabryPermission = nearbyAvailable;
         permissionQuery = query;
+        nearbyAbstraction = nearbyAbs;
     }
 
     public void startGame()
@@ -102,6 +105,7 @@ public class GameStart extends Game
         if(permissionQuery == null)
         {
             Utils.logBreak("I-O-S. What should I say?", this);
+            return;
         }
 
         permissionQuery.requestPermission();

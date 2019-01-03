@@ -51,15 +51,44 @@ public class LevelSelectMenuComponent extends MenuBtnsBackComponent
     {
         Utils.aassert(componentArg instanceof String);
         String s = (String) componentArg;
-        Utils.aassert(s.length() == 1);
 
+        //NOTE: S = create Server, otherwise U, O, or P
         if(s.charAt(0) != 'S')
+        {
+            Utils.aassert(s.length() == 1);
             screenManager.setScreen(new MenuLevel(screenManager,
-                MenuLevel.LevelComponentName.ChooseCharacterMenu, s + level));
+                    MenuLevel.LevelComponentName.ChooseCharacterMenu, s + level));
+        }
         else
         {
-            //TODO: Server created!
-            Utils.log("server created!");
+            Utils.aassert(s.length() == 2);
+            screenManager.setScreen(new GameServerNearbyLevel(screenManager, s.charAt(1), level));
         }
+    }
+
+    public static String getLevelName(char level)
+    {
+        switch(level)
+        {
+            case 'E':
+            {
+                return "maps/easy.txt";
+            }
+            case 'M':
+            {
+                return "maps/middle.txt";
+            }
+            case 'H':
+            {
+                return "maps/hard.txt";
+            }
+            default:
+            {
+                Utils.invalidCodePath();
+                break;
+            }
+        }
+
+        return "";
     }
 }

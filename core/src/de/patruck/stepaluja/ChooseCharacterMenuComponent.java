@@ -82,6 +82,7 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
 
                 switch(gameMode)
                 {
+                    //Practice
                     case 'U':
                     {
                         Utils.aassert(!map.equals(""));
@@ -89,11 +90,13 @@ public class ChooseCharacterMenuComponent extends MenuBtnsBackComponent
                                 playerId, map));
                         break;
                     }
+                    //Online
                     case 'O':
                     {
                         screenManager.setScreen(new RandomMatchmakeLevel(screenManager, playerId));
                         break;
                     }
+                    //Party
                     case 'P':
                     {
                         screenManager.setScreen(new MenuLevel(screenManager,
