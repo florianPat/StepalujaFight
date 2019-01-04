@@ -59,7 +59,7 @@ public class GameServerNearbyLevel extends LoadingLevel
             if(screenManager.nearbyAbstraction.connectedFlag == 1)
             {
                 screenManager.setScreen(new TestLevel(screenManager, playerId, playerId,
-                        LevelSelectMenuComponent.getLevelName(level), networkManager));
+                        LevelSelectMenuComponent.getLevelName(level), networkManager, true));
             }
             else
             {

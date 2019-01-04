@@ -12,9 +12,11 @@ public class TestLevel extends TileMapLevel
     private float sendTimer = 0.0f;
     private final float maxSendTimer = 0.5f;
     private PlayerComponent localPlayer;
+    private RemotePlayerComponent remotePlayer;
+    private boolean isServer;
 
     public TestLevel(GameStart screenManager, char player0, char player1, String map,
-                     NearbyNetworkManager networkManagerIn)
+                     NearbyNetworkManager networkManagerIn, boolean isServerIn)
     {
         super(map, screenManager);
 
@@ -22,6 +24,7 @@ public class TestLevel extends TileMapLevel
         playerNumbers[0] = player0;
         playerNumbers[1] = player1;
         networkManager = networkManagerIn;
+        isServer = isServerIn;
     }
 
     @Override
@@ -54,9 +57,12 @@ public class TestLevel extends TileMapLevel
             actor.addComponent(localPlayer);
         }
         else
-            actor.addComponent(new PlayerComponent(eventManager, assetManager, spriteBatch, physics,
-                actor, textureAtlas, n, onScreenControls.input, camera,
-                map.getWidth(), map.getHeight(), heartComponents[n], 'O'));
+        {
+            remotePlayer = new RemotePlayerComponent(eventManager, assetManager, spriteBatch, physics,
+                    actor, textureAtlas, n, camera,
+                    map.getWidth(), map.getHeight(), heartComponents[n], 'O');
+            actor.addComponent(remotePlayer);
+        }
     }
 
     @Override
@@ -110,6 +116,7 @@ public class TestLevel extends TileMapLevel
                 {
                     Vector2 s = (Vector2) o;
                     Utils.log("We got back a Vec2:" + s.toString());
+                    remotePlayer.setNewPos(s);
                 }
                 else
                 {

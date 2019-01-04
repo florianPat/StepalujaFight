@@ -27,7 +27,7 @@ public class GameClientNearbyLevel extends LoadingLevel
             if(screenManager.nearbyAbstraction.connectedFlag == 1)
             {
                 screenManager.setScreen(new TestLevel(screenManager, playerId, playerId,
-                        level, networkManager));
+                        level, networkManager, false));
             }
             else
             {
