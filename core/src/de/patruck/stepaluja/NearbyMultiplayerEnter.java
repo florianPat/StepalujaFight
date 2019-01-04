@@ -29,7 +29,6 @@ public class NearbyMultiplayerEnter extends MenuBtnsBackComponent
         networkManager = new NearbyNetworkManager(screenManager.nearbyAbstraction);
         Utils.aassert(screenManager.nearbyAbstraction != null);
         screenManager.nearbyAbstraction.listItems = nearbyServerList.listItems;
-        screenManager.nearbyAbstraction.bufferBytesRead = networkManager.getBufferBytesRead();
         screenManager.nearbyAbstraction.startDiscovery();
     }
 

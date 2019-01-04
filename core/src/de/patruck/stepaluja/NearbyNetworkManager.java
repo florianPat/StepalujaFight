@@ -1,14 +1,17 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class NearbyNetworkManager
 {
     private NearbyAbstraction nearbyAbstraction;
+    private ByteBuffer buffer;
     private byte[] bufferBytesRead;
     private byte[] bufferBytesWrite;
     private Kryo kryo;
@@ -19,6 +22,7 @@ public class NearbyNetworkManager
     {
         nearbyAbstraction = nearbyAbstractionIn;
 
+        buffer = ByteBuffer.allocate(256);
         bufferBytesRead = new byte[256];
         bufferBytesWrite = new byte[256];
 
@@ -27,7 +31,7 @@ public class NearbyNetworkManager
         input = new Input(bufferBytesRead);
 
         //NOTE: Register classes here!
-        kryo.register(String.class);
+        kryo.register(Vector2.class);
     }
 
     public void write(Object o)
@@ -54,6 +58,11 @@ public class NearbyNetworkManager
             Utils.invalidCodePath();
         }
 
+        if(!result)
+        {
+            input.reset();
+        }
+
         return result;
     }
 
@@ -62,10 +71,24 @@ public class NearbyNetworkManager
         Utils.aassert(nearbyAbstraction.connectedFlag == 1);
         nearbyAbstraction.send(bufferBytesWrite);
         output.flush();
+        output.reset();
     }
 
-    public byte[] getBufferBytesRead()
+    public void update()
     {
-        return bufferBytesRead;
+        nearbyAbstraction.receive(buffer);
+
+        buffer.flip();
+        int remaing = buffer.remaining();
+        if(remaing > 0)
+        {
+            Utils.log("Received a packet from");
+
+            buffer.get(bufferBytesRead, 0, remaing);
+        }
+        buffer.flip();
+
+        input.reset();
+        buffer.clear();
     }
 }

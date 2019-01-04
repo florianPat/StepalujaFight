@@ -77,6 +77,8 @@ public class NearbyServerList
     {
         if(rect.contains(viewportPosition) && distanceDragged < 5.0f)
         {
+            if(localYStart < 0.0f)
+                localYStart = 0.0f;
             int firstIndex = (int) localYStart;
             viewportPosition.y -= rect.y;
             Utils.aassert(selectIndex == -1);
@@ -153,7 +155,8 @@ public class NearbyServerList
         }
         String itemEnd = builder.toString();
 
-        Utils.log(localYStart + "");
+        if(localYStart < 0.0f)
+            localYStart = 0.0f;
         int index = (int) localYStart;
         float end = ((int) (rect.height / itemHeight)) + index;
         Utils.aassert(index >= 0 && index <= end);

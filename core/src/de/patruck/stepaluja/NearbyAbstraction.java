@@ -1,12 +1,12 @@
 package de.patruck.stepaluja;
 
+import java.nio.ByteBuffer;
 import java.util.Vector;
 
 public abstract class NearbyAbstraction
 {
     public Vector<NearbyServerList.ListItem> listItems = null;
     public int connectedFlag = 0;
-    public byte[] bufferBytesRead = null;
 
     public abstract void startAdvertising(String username, char level);
 
@@ -21,4 +21,6 @@ public abstract class NearbyAbstraction
     public abstract void disconnectFromAllEndpoints();
 
     public abstract void send(byte[] bytes);
+
+    public abstract void receive(ByteBuffer readByteBuffer);
 }

@@ -1,5 +1,7 @@
 package de.patruck.stepaluja;
 
+import com.badlogic.gdx.math.Vector2;
+
 public class TestLevel extends TileMapLevel
 {
     private final int playerCount = 2;
@@ -95,6 +97,27 @@ public class TestLevel extends TileMapLevel
         for(HeartComponent hc : heartComponents)
         {
             hc.draw();
+        }
+
+        networkManager.update();
+
+        while(networkManager.hasNext())
+        {
+            Object o = networkManager.read();
+            if(o != null)
+            {
+                if(o instanceof Vector2)
+                {
+                    Vector2 s = (Vector2) o;
+                    Utils.log("We got back a Vec2:" + s.toString());
+                }
+                else
+                {
+                    Utils.log("Unexpected reading of class: " + o.getClass().toString() + " ;;; "
+                            + o.toString());
+                    //Utils.invalidCodePath();
+                }
+            }
         }
 
         sendTimer += dt;

@@ -13,7 +13,6 @@ public class GameServerNearbyLevel extends LoadingLevel
         this.playerId = playerId;
         this.level = level;
         this.networkManager = new NearbyNetworkManager(screenManager.nearbyAbstraction);
-        screenManager.nearbyAbstraction.bufferBytesRead = this.networkManager.getBufferBytesRead();
 
         msg = "Created server!\nWaiting for players to join...";
     }

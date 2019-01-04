@@ -26,7 +26,7 @@ import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 
 public class AndroidLauncher extends AndroidApplication implements PermissionQuery
 {
@@ -37,21 +37,18 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
 
 	public native static boolean firebaseInitAndroid(Activity activity);
 
-    static class ReceiveBytesPayloadListener extends PayloadCallback
+    private static class ReceiveBytesPayloadListener extends PayloadCallback
     {
-        private byte[] bufferBytesRead = null;
-
-        public ReceiveBytesPayloadListener(byte[] buffer)
-        {
-            bufferBytesRead = buffer;
-        }
+        private byte[] receiveBytes = new byte[256];
+        private boolean readFrom = false;
 
         @Override
         public void onPayloadReceived(String endpointId, Payload payload)
         {
-            Utils.aassert(bufferBytesRead != null);
-            bufferBytesRead = payload.asBytes();
-            Utils.log("onPayloadReceived: " + Arrays.toString(bufferBytesRead));
+            //Utils.aassert(!readFrom);
+            receiveBytes = payload.asBytes();
+            readFrom = true;
+            Utils.log("onPayloadReceived");
         }
 
         @Override
@@ -61,7 +58,19 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
             // after the call to onPayloadReceived().
             Utils.log("onPayloadTransferUpdate");
         }
+
+        public void updateIntoBuffer(ByteBuffer byteBuffer)
+        {
+            Utils.log("updateIntoBuffer");
+            if(readFrom)
+            {
+                byteBuffer.put(receiveBytes);
+                readFrom = false;
+            }
+        }
     }
+
+    private final ReceiveBytesPayloadListener receiveBytesPayloadListener = new ReceiveBytesPayloadListener();
 
     private final NearbyAbstraction nearbyAbstraction = new NearbyAbstraction()
     {
@@ -166,6 +175,12 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
             Payload bytesPayload = Payload.fromBytes(bytes);
             Nearby.getConnectionsClient(getContext()).sendPayload(endendpointId, bytesPayload);
         }
+
+        @Override
+        public void receive(ByteBuffer bufferBytesRead)
+        {
+            receiveBytesPayloadListener.updateIntoBuffer(bufferBytesRead);
+        }
     };
 
     //NOTE: Just connect if you call startAdvertise and one wants to
@@ -175,8 +190,7 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo)
         {
             // Automatically accept the connection on both sides.
-            Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId,
-                    new ReceiveBytesPayloadListener(nearbyAbstraction.bufferBytesRead));
+            Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId, receiveBytesPayloadListener);
         }
 
         @Override
