@@ -10,7 +10,7 @@ public class TestLevel extends TileMapLevel
     private char[] playerNumbers;
     private NearbyNetworkManager networkManager;
     private float sendTimer = 0.0f;
-    private final float maxSendTimer = 0.5f;
+    private final float maxSendTimer = 0.2f;
     private PlayerComponent localPlayer;
     private RemotePlayerComponent remotePlayer;
     private boolean isServer;
@@ -49,7 +49,7 @@ public class TestLevel extends TileMapLevel
         Actor actor = gom.addActor();
         heartComponents[n] = new HeartComponent(assetManager, spriteBatch, n);
 
-        if(n == 0)
+        if((isServer && n == 0) || ((!isServer) && n == 1))
         {
             localPlayer = new PlayerComponent(eventManager, assetManager, spriteBatch, physics,
                     actor, textureAtlas, n, onScreenControls.input, camera,
@@ -60,7 +60,7 @@ public class TestLevel extends TileMapLevel
         {
             remotePlayer = new RemotePlayerComponent(eventManager, assetManager, spriteBatch, physics,
                     actor, textureAtlas, n, camera,
-                    map.getWidth(), map.getHeight(), heartComponents[n], 'O');
+                    map.getWidth(), map.getHeight(), heartComponents[n], 'O', maxSendTimer);
             actor.addComponent(remotePlayer);
         }
     }
@@ -118,6 +118,17 @@ public class TestLevel extends TileMapLevel
                     Utils.log("We got back a Vec2:" + s.toString());
                     remotePlayer.setNewPos(s);
                 }
+                else if(o instanceof SmashEventData)
+                {
+                    SmashEventData smashEventData = (SmashEventData) o;
+                    Utils.log("We got back a SmashEventData");
+                    eventManager.TriggerEvent(smashEventData);
+                }
+                else if(o instanceof String)
+                {
+                    Utils.log("We got back a live less");
+                    remotePlayer.setLoseLive();
+                }
                 else
                 {
                     Utils.log("Unexpected reading of class: " + o.getClass().toString() + " ;;; "
@@ -127,7 +138,19 @@ public class TestLevel extends TileMapLevel
             }
         }
 
+        SmashEventData eventDataToSend = localPlayer.getToSendEvent();
         sendTimer += dt;
+        if(localPlayer.shouldLiveLess())
+        {
+            Utils.log("Should live less");
+            networkManager.write("1");
+            sendTimer = maxSendTimer + 1.0f;
+        }
+        if(eventDataToSend != null)
+        {
+            networkManager.write(eventDataToSend);
+            sendTimer = maxSendTimer + 1.0f;
+        }
         if(sendTimer > maxSendTimer)
         {
             sendTimer = 0.0f;

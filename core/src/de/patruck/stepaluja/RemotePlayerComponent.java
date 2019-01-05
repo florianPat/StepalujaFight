@@ -91,15 +91,17 @@ public class RemotePlayerComponent extends AnimationComponent
     private Vector2 ooldPos;
     private Vector2 nnewPos;
     private float currentPosProgress = 0.0f;
+    private final float rtt;
 
     public RemotePlayerComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
                                  int n, OrthographicCamera cameraIn, int tilemapWidthIn, int tilemapHeightIn, HeartComponent heartComponentIn,
-                                 char gameModeIn)
+                                 char gameModeIn, float rttIn)
     {
         super(eventManager, assetManager, spriteBatch, physics, owner, textureAtlas);
 
         playerId = n;
         gameMode = gameModeIn;
+        rtt = rttIn;
 
         tilemapWidth = tilemapWidthIn;
         tilemapHeight = tilemapHeightIn;
@@ -114,13 +116,39 @@ public class RemotePlayerComponent extends AnimationComponent
         rect = new Rectangle();
         collider = new Collider(rect);
         ArrayList<String> s = new ArrayList<String>();
-        s.add("Ground");
+        //s.add("Ground");
         body = new Body(new Vector2(450 + (n == 0 ? 0 : 100), tilemapHeight - 64), "Player" + n, collider, s, false, false);
+        physics.addElement(body);
         ooldPos = new Vector2(body.pos);
         nnewPos = new Vector2(body.pos);
 
         size = new Vector2(16.0f, 16.0f);
         rectSmash = new Rectangle(0.0f, 0.0f, size.x, size.y);
+        size = new Vector2(16.0f, 16.0f);
+        rectSmash = new Rectangle(0.0f, 0.0f, size.x, size.y);
+        colliderSmash = new Collider(rectSmash);
+        ArrayList<String> sSmash = new ArrayList<String>();
+        switch(gameMode)
+        {
+            case 'P':
+            {
+                sSmash = physics.getAllCollisionIdsWhichContain("Opponent");
+                break;
+            }
+            case 'O':
+            {
+                sSmash.add("Player" + (n == 0 ? 1 : 0));
+                break;
+            }
+            default:
+            {
+                Utils.invalidCodePath();
+                break;
+            }
+        }
+        bodySmash = new Body(new Vector2(rectSmash.getX(), rectSmash.getY()), "PlayerSmashTrigger" + n, colliderSmash, sSmash, true, false);
+        bodySmash.setIsActive(false);
+        physics.addElement(bodySmash);
 
         yOffset = 8.0f;
         offset = new Vector2(0.0f, yOffset);
@@ -129,6 +157,27 @@ public class RemotePlayerComponent extends AnimationComponent
         Utils.aassert(animation.containsKey("right-walk"));
         current = animation.get("right-walk").getKeyFrame(0.0f);
         sprite = new Sprite(current);
+
+        heartComponent = heartComponentIn;
+
+        smashFunction = new Function()
+        {
+            @Override
+            public void Event(EventData eventData)
+            {
+                Utils.aassert(eventData instanceof SmashEventData);
+                SmashEventData event = (SmashEventData) eventData;
+
+                int playerId = event.getPlayerId();
+
+                if(playerId == getPlayerId())
+                {
+                    getAHit(event.getSmashHitDir());
+                }
+            }
+        };
+
+        eventManager.addListener(SmashEventData.eventId, Utils.getDelegateFromFunction(smashFunction));
     }
 
     public int getPlayerId()
@@ -140,30 +189,9 @@ public class RemotePlayerComponent extends AnimationComponent
     {
         if((!getHit) && (!respawn))
         {
-            Vector2 smashHitDirNor = new Vector2(smashHitDir).nor();
-            Vector2 hittingVecNor = new Vector2(hittingVec).nor();
-
-            if(smashHitDirNor.x != hittingVecNor.x)
-            {
-                hitVec.x = smashHitDirNor.x;
-                hitVec.y = -hittingVecNor.y;
-            }
-            else
-            {
-                hitVec.x = hittingVecNor.x;
-                hitVec.y = -hittingVecNor.y;
-            }
-
-            hitVec.scl(norHitPoints * hitPoints);
-
-            if(hitVec.y == 0.0f)
-            {
-                hitVec.y = physics.gravity;
-            }
-
-            hitPoints += norPlusMultHitPoints;
             lockMotion = true;
             getHit = true;
+            Utils.log("setColor");
             sprite.setColor(hitColor);
             jumpState = JumpState.FALLING;
         }
@@ -172,47 +200,104 @@ public class RemotePlayerComponent extends AnimationComponent
     @Override
     public void update(float dt)
     {
-        Utils.aassert(nJumps >= 0);
+        current = null;
+
+        if(respawn)
+        {
+            jumpTimer += dt;
+
+            if(jumpTimer < 0.5f)
+            {
+                sprite.setAlpha(MathUtils.lerp(1.0f, 0.0f, jumpTimer * 2.0f));
+            }
+            else if(jumpTimer < 1.0f && jumpTimer >= 0.5f)
+            {
+                sprite.setAlpha(MathUtils.lerp(0.0f, 1.0f, (jumpTimer - 0.5f) * 2.0f));
+            }
+            else if(jumpTimer < 1.5f && jumpTimer >= 1.0f)
+            {
+                sprite.setAlpha(MathUtils.lerp(1.0f, 0.0f, (jumpTimer - 1.0f) * 2.0f));
+            }
+            else if(jumpTimer < 2.0f && jumpTimer >= 1.0f)
+            {
+                sprite.setAlpha(MathUtils.lerp(1.0f, 0.0f, (jumpTimer - 1.5f) * 2.0f));
+            }
+
+            if(jumpTimer >= maxRespawnTime)
+            {
+                jumpTimer = 0.0f;
+                respawn = false;
+                lockMotion = false;
+                sprite.setAlpha(1.0f);
+            }
+        }
+
+        if(getHit)
+        {
+            hitTimer += dt;
+
+            if(hitTimer >= maxHitTimer)
+            {
+                hitTimer = 0.0f;
+                sprite.setColor(Color.WHITE);
+                getHit = false;
+            }
+        }
+
+        if(body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.SHOES)
+        {
+            jumpState = JumpState.NONE;
+            hittingVec.y = 0.0f;
+        }
 
         currentPosProgress += dt;
-        if(currentPosProgress > 1.0f)
-            currentPosProgress = 1.0f;
+        if(currentPosProgress >= 0.5f)
+            currentPosProgress = 0.5f;
 
+        float currentPosProgrssPercent = currentPosProgress / rtt;
 
-        body.pos = new Vector2(MathUtils.lerp(ooldPos.x, nnewPos.x, currentPosProgress),
-                MathUtils.lerp(ooldPos.y, nnewPos.y, currentPosProgress));
+        body.pos = new Vector2(MathUtils.lerp(ooldPos.x, nnewPos.x, currentPosProgrssPercent),
+                MathUtils.lerp(ooldPos.y, nnewPos.y, currentPosProgrssPercent));
         Vector2 newPos = body.pos;
         offset.x = walkState == WalkState.LEFT ? 0.0f : 16.0f;
         offset.y = yOffset;
 
-        if(current == null)
+        if(ooldPos.x < nnewPos.x)
         {
-            switch(walkState)
+            walkState = WalkState.RIGHT;
+        }
+        else if(ooldPos.x > nnewPos.x)
+        {
+            walkState = WalkState.LEFT;
+        }
+
+        switch(walkState)
+        {
+            case LEFT:
             {
-                case LEFT:
-                {
-                    Utils.aassert(animation.containsKey("left-walk"));
-                    current = animation.get("left-walk").getKeyFrame(0.0f);
-                    break;
-                }
-                case RIGHT:
-                {
-                    Utils.aassert(animation.containsKey("right-walk"));
-                    current = animation.get("right-walk").getKeyFrame(0.0f);
-                    break;
-                }
-                default:
-                {
-                    Utils.invalidCodePath();
-                }
+                Utils.aassert(animation.containsKey("left-walk"));
+                current = animation.get("left-walk").getKeyFrame(0.0f);
+                break;
+            }
+            case RIGHT:
+            {
+                Utils.aassert(animation.containsKey("right-walk"));
+                current = animation.get("right-walk").getKeyFrame(0.0f);
+                break;
+            }
+            default:
+            {
+                Utils.invalidCodePath();
             }
         }
 
         sprite.setTexture(current);
+        Physics.applySpriteToBoundingBox(current, collider, newPos);
 
         offset.add(newPos);
         rectSmash.x = offset.x;
         rectSmash.y = offset.y;
+        colliderSmash.updateRectCollider();
     }
 
     @Override
@@ -220,6 +305,61 @@ public class RemotePlayerComponent extends AnimationComponent
     {
         sprite.setPosition(body.pos.x, body.pos.y);
         sprite.draw(spriteBatch);
+
+        if(playerId == 0)
+        {
+            camera.position.x = body.pos.x;
+            camera.position.y = body.pos.y;
+
+            camera.zoom = camZoom;
+        }
+        else if(playerId == 1)
+        {
+            Vector2 newCamPos = new Vector2((body.pos.x + camera.position.x) / 2.0f,
+                    (body.pos.y + camera.position.y) / 2.0f);
+
+            boolean farAway = false;
+
+            float length = body.pos.x - camera.position.x;
+            if(Math.abs(length) >= 200.0f)
+            {
+                farAway = true;
+            }
+            else
+            {
+                length = body.pos.y - camera.position.y;
+                if(Math.abs(length) >= 100.0f)
+                {
+                    farAway = true;
+                }
+            }
+
+            if(farAway && newCamZoom != MAX_CAMERA_ZOOM)
+            {
+                newCamZoom = MAX_CAMERA_ZOOM;
+                currentProgress = 0.0f;
+            }
+            else if(!farAway && newCamZoom != MIN_CAMERA_ZOOM)
+            {
+                newCamZoom = MIN_CAMERA_ZOOM;
+                currentProgress = 0.0f;
+            }
+            if(newCamZoom != camZoom)
+            {
+                camZoom = MathUtils.lerp(camZoom, newCamZoom, currentProgress);
+            }
+            camera.zoom = camZoom;
+            camera.position.x = newCamPos.x;
+            camera.position.y = newCamPos.y;
+
+            clipCamera();
+        }
+        else
+        {
+            Utils.invalidCodePath();
+        }
+
+        camera.update();
     }
 
     private void clipCamera()
@@ -247,8 +387,37 @@ public class RemotePlayerComponent extends AnimationComponent
 
     public void setNewPos(Vector2 newPos)
     {
-        ooldPos = nnewPos;
-        nnewPos = newPos;
-        currentPosProgress = 0.0f;
+        if(currentPosProgress >= rtt)
+        {
+            Utils.log("Current pos: " + body.pos.x + " , oldPos: " + nnewPos.x);
+            ooldPos = nnewPos;
+            nnewPos = newPos;
+            currentPosProgress = 0.0f;
+        }
+    }
+
+    public void setLoseLive()
+    {
+        --nLives;
+        heartComponent.setHeartState(nLives, HeartComponent.HeartState.EMPTY);
+        if(nLives > 0)
+        {
+            //body.pos = new Vector2(450 + (playerId == 0 ? 0 : 100), tilemapHeight - 64);
+            lockMotion = true;
+            walkState = WalkState.RIGHT;
+            jumpState = JumpState.NONE;
+            jumpTimer = 0.0f;
+            smashTimer = 0.0f;
+            smashState = JumpState.NONE;
+            nJumps = 3;
+            sprite.setColor(Color.WHITE);
+            getHit = false;
+            respawn = true;
+        }
+        else
+        {
+            Utils.log("DeadEventData");
+            eventManager.TriggerEvent(new DeadEventData(playerId));
+        }
     }
 }

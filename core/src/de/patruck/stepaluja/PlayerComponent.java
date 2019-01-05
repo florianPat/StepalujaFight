@@ -87,6 +87,9 @@ public class PlayerComponent extends AnimationComponent {
 
     private char gameMode;
 
+    private SmashEventData eventData = null;
+    private boolean liveLess = false;
+
     public PlayerComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
                            int n, OnScreenControls.InputSystem inputSystemIn,
                            OrthographicCamera cameraIn, int tilemapWidthIn, int tilemapHeightIn, HeartComponent heartComponentIn,
@@ -211,6 +214,9 @@ public class PlayerComponent extends AnimationComponent {
     @Override
     public void update(float dt) {
         Utils.aassert(nJumps >= 0);
+
+        eventData = null;
+        liveLess = false;
 
         currentProgress += 0.05f * dt;
 
@@ -382,8 +388,8 @@ public class PlayerComponent extends AnimationComponent {
             }
             else
             {
-                //TODO: Send and trigger!
-                eventManager.TriggerEvent(new SmashEventData(playerId == 0 ? 1 : 0, hittingVec));
+                eventData = new SmashEventData(playerId == 0 ? 1 : 0, hittingVec);
+                eventManager.TriggerEvent(eventData);
             }
         }
 
@@ -439,6 +445,7 @@ public class PlayerComponent extends AnimationComponent {
                 getHit = false;
                 respawn = true;
                 hitPoints = 1.0f;
+                liveLess = true;
             }
             else
             {
@@ -549,5 +556,15 @@ public class PlayerComponent extends AnimationComponent {
     public Vector2 getPos()
     {
         return new Vector2(sprite.getX(), sprite.getY());
+    }
+
+    public SmashEventData getToSendEvent()
+    {
+        return eventData;
+    }
+
+    public boolean shouldLiveLess()
+    {
+        return liveLess;
     }
 }

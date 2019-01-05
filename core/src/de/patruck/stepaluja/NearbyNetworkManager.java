@@ -17,6 +17,7 @@ public class NearbyNetworkManager
     private Kryo kryo;
     private Output output;
     private Input input;
+    private boolean newBuffer = false;
 
     public NearbyNetworkManager(NearbyAbstraction nearbyAbstractionIn)
     {
@@ -32,6 +33,8 @@ public class NearbyNetworkManager
 
         //NOTE: Register classes here!
         kryo.register(Vector2.class);
+        kryo.register(SmashEventData.class);
+        kryo.register(String.class);
     }
 
     public void write(Object o)
@@ -47,6 +50,9 @@ public class NearbyNetworkManager
 
     public boolean hasNext()
     {
+        if(!newBuffer)
+            return false;
+
         boolean result = false;
         try
         {
@@ -76,19 +82,21 @@ public class NearbyNetworkManager
 
     public void update()
     {
-        nearbyAbstraction.receive(buffer);
-
-        buffer.flip();
-        int remaing = buffer.remaining();
-        if(remaing > 0)
+        newBuffer = nearbyAbstraction.receive(buffer);
+        if(newBuffer)
         {
-            Utils.log("Received a packet from");
+            buffer.flip();
+            int remaing = buffer.remaining();
+            if(remaing > 0)
+            {
+                Utils.log("Received a packet from");
 
-            buffer.get(bufferBytesRead, 0, remaing);
+                buffer.get(bufferBytesRead, 0, remaing);
+            }
+            buffer.flip();
+
+            input.reset();
+            buffer.clear();
         }
-        buffer.flip();
-
-        input.reset();
-        buffer.clear();
     }
 }

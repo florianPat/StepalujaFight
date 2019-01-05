@@ -22,5 +22,5 @@ public abstract class NearbyAbstraction
 
     public abstract void send(byte[] bytes);
 
-    public abstract void receive(ByteBuffer readByteBuffer);
+    public abstract boolean receive(ByteBuffer readByteBuffer);
 }

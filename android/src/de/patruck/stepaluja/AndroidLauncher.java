@@ -59,14 +59,17 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
             Utils.log("onPayloadTransferUpdate");
         }
 
-        public void updateIntoBuffer(ByteBuffer byteBuffer)
+        public boolean updateIntoBuffer(ByteBuffer byteBuffer)
         {
             Utils.log("updateIntoBuffer");
             if(readFrom)
             {
                 byteBuffer.put(receiveBytes);
                 readFrom = false;
+                return true;
             }
+
+            return false;
         }
     }
 
@@ -177,9 +180,9 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         }
 
         @Override
-        public void receive(ByteBuffer bufferBytesRead)
+        public boolean receive(ByteBuffer bufferBytesRead)
         {
-            receiveBytesPayloadListener.updateIntoBuffer(bufferBytesRead);
+            return receiveBytesPayloadListener.updateIntoBuffer(bufferBytesRead);
         }
     };
 
