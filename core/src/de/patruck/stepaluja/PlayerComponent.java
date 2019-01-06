@@ -36,7 +36,7 @@ public class PlayerComponent extends AnimationComponent {
     private float maxJumpTime = 0.35f;
 
     private float smashTimer = 0.0f;
-    private final float maxSmashTimer = 0.125f;
+    private final float maxSmashTimer = 0.5f;
     private JumpState smashState = JumpState.NONE;
     private short nJumps = 3;
 
@@ -89,6 +89,7 @@ public class PlayerComponent extends AnimationComponent {
 
     private SmashEventData eventData = null;
     private boolean liveLess = false;
+    private float velX = 0.0f;
 
     public PlayerComponent(EventManager eventManager, AssetManager assetManager, SpriteBatch spriteBatch, Physics physics, Actor owner, String[] textureAtlas,
                            int n, OnScreenControls.InputSystem inputSystemIn,
@@ -220,12 +221,32 @@ public class PlayerComponent extends AnimationComponent {
 
         currentProgress += 0.05f * dt;
 
-        //move
-        body.vel.x = 0.0f;
-        body.vel.y += physics.gravity;
-
         stateTime += dt;
         current = null;
+
+        if(smashState == JumpState.JUMPING)
+        {
+            current = textureSmash;
+            smashTimer += dt;
+            if(smashTimer > maxSmashTimer)
+            {
+                smashTimer = 0.0f;
+                smashState = JumpState.NONE;
+                bodySmash.setIsActive(false);
+            }
+            if(body.vel.x != 0.0f)
+            {
+                body.vel.x = MathUtils.lerp(velX, 0.0f, smashTimer / maxSmashTimer);
+
+                Utils.log("Vel.x:" + body.vel.x);
+            }
+        }
+        else
+        {
+            body.vel.x = 0.0f;
+        }
+        //move (also see above :))
+        body.vel.y += physics.gravity;
 
         if(respawn)
         {
@@ -281,21 +302,6 @@ public class PlayerComponent extends AnimationComponent {
             }
         }
 
-        if(smashState == JumpState.JUMPING)
-        {
-            current = textureSmash;
-            smashTimer += dt;
-            if(smashTimer > maxSmashTimer)
-            {
-                smashTimer = 0.0f;
-                smashState = JumpState.NONE;
-                bodySmash.setIsActive(false);
-            }
-            bodySmash.setIsActive(false);
-            smashState = JumpState.NONE;
-        }
-
-        //NOTE: If we do not want that you can walk if you hit, delete the && smashState == JumpS...
         if((!lockMotion) && smashState == JumpState.NONE)
         {
             if(inputSystem.isMoveLeftPressed())
@@ -321,11 +327,6 @@ public class PlayerComponent extends AnimationComponent {
                 walkState = WalkState.RIGHT;
             }
 
-            if(body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.SHOES)
-            {
-                nJumps = 3;
-            }
-
             if(inputSystem.isJumpPressed())
             {
                 if(nJumps > 0)
@@ -347,27 +348,6 @@ public class PlayerComponent extends AnimationComponent {
                 }
             }
 
-            if(jumpState == JumpState.JUMPING)
-            {
-                jumpTimer += dt;
-                body.vel.y = speed * 3.5f * Math.abs(jumpTimer - 1.0f);
-                hittingVec.y = 1.0f;
-                if(jumpTimer >= maxJumpTime || body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.HEAD)
-                {
-                    jumpTimer = 0.0f;
-                    jumpState = JumpState.FALLING;
-                }
-            }
-            else if(jumpState == JumpState.FALLING)
-            {
-                hittingVec.y = -1.0f;
-                if(body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.SHOES)
-                {
-                    jumpState = JumpState.NONE;
-                    hittingVec.y = 0.0f;
-                }
-            }
-
             //fighting
             if(inputSystem.isHitPressed() && smashState == JumpState.NONE)
             {
@@ -375,11 +355,39 @@ public class PlayerComponent extends AnimationComponent {
                 current = textureSmash;
                 bodySmash.setIsActive(true);
                 smashState = JumpState.JUMPING;
+                velX = body.vel.x;
+            }
+        }
+
+        if(body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.SHOES)
+        {
+            nJumps = 3;
+        }
+
+        if(jumpState == JumpState.JUMPING)
+        {
+            jumpTimer += dt;
+            body.vel.y = speed * 3.5f * Math.abs(jumpTimer - 1.0f);
+            hittingVec.y = 1.0f;
+            if(jumpTimer >= maxJumpTime || body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.HEAD)
+            {
+                jumpTimer = 0.0f;
+                jumpState = JumpState.FALLING;
+            }
+        }
+        else if(jumpState == JumpState.FALLING)
+        {
+            hittingVec.y = -1.0f;
+            if(body.triggerInformation.triggerBodyPart == Physics.TriggerBodyPart.SHOES)
+            {
+                jumpState = JumpState.NONE;
+                hittingVec.y = 0.0f;
             }
         }
 
         if(bodySmash.getIsTriggered())
         {
+            bodySmash.setIsActive(false);
             if(gameMode == 'P')
             {
                 String hitOpponent = bodySmash.getTriggerInformation().triggerElementCollision;

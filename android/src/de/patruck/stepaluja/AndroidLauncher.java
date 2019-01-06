@@ -275,7 +275,7 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         {
             Utils.aassert(nearbyAbstraction.listItems != null);
 
-            //TODO: Use a map here!
+            //NOTE: Maybe use a map here?!
             for(int i = 0; i < nearbyAbstraction.listItems.size(); ++i)
             {
                 NearbyServerList.ListItem item = nearbyAbstraction.listItems.elementAt(i);

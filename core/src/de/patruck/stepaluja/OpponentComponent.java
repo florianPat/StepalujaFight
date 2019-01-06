@@ -264,8 +264,6 @@ public class OpponentComponent extends AnimationComponent
                 smashState = JumpState.NONE;
                 bodySmash.setIsActive(false);
             }
-            bodySmash.setIsActive(false);
-            smashState = JumpState.NONE;
         }
 
         //NOTE: If we do not want that you can walk if you hit, delete the && smashState == JumpS...
@@ -364,7 +362,7 @@ public class OpponentComponent extends AnimationComponent
             }
 
             //fighting
-            if(random < 15 && smashState == JumpState.NONE)
+            if(random < 3 && smashState == JumpState.NONE)
             {
                 textureSmash = walkState == WalkState.RIGHT ? textureSmashRight : textureSmashLeft;
                 current = textureSmash;
@@ -375,6 +373,8 @@ public class OpponentComponent extends AnimationComponent
 
         if(bodySmash.getIsTriggered())
         {
+            bodySmash.setIsActive(false);
+            smashState = JumpState.NONE;
             eventManager.TriggerEvent(new SmashEventData(0, hittingVec));
         }
 

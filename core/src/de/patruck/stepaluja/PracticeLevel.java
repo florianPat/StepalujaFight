@@ -7,8 +7,6 @@ public class PracticeLevel extends TileMapLevel
     private final int opponents = 4;
     private Function deadFlaggedFunction;
     private Function deadOpponnentFunction;
-    //TODO: Maybe this needs some kind of manager and stuff like the GameObjectManager...
-    //But time is running, so the dirty way must handle it :/
     private HeartComponent hc;
     private HighscoreComponent highC;
     private char playerNumber;
