@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.nio.ByteBuffer;
+import java.util.Vector;
 
 public class AndroidLauncher extends AndroidApplication implements PermissionQuery
 {
@@ -39,15 +40,21 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
 
     private static class ReceiveBytesPayloadListener extends PayloadCallback
     {
-        private byte[] receiveBytes = new byte[256];
-        private boolean readFrom = false;
+        private Vector<byte[]> receiveBytes = new Vector<byte[]>(3);
+        private int currentIndex = 0;
 
         @Override
         public void onPayloadReceived(String endpointId, Payload payload)
         {
-            //Utils.aassert(!readFrom);
-            receiveBytes = payload.asBytes();
-            readFrom = true;
+            Utils.log("CurrentIndex: " + currentIndex);
+            Utils.aassert(currentIndex < 3);
+            if(currentIndex >= receiveBytes.size())
+                receiveBytes.add(payload.asBytes());
+            else
+                receiveBytes.set(currentIndex, payload.asBytes());
+
+            ++currentIndex;
+
             Utils.log("onPayloadReceived");
         }
 
@@ -62,10 +69,13 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         public boolean updateIntoBuffer(ByteBuffer byteBuffer)
         {
             Utils.log("updateIntoBuffer");
-            if(readFrom)
+            if(currentIndex != 0)
             {
-                byteBuffer.put(receiveBytes);
-                readFrom = false;
+                for(int i = currentIndex; i >= 0; --i)
+                {
+                    byteBuffer.put(receiveBytes.get(i));
+                }
+                currentIndex = 0;
                 return true;
             }
 
@@ -192,8 +202,15 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         @Override
         public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo)
         {
-            // Automatically accept the connection on both sides.
-            Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId, receiveBytesPayloadListener);
+            if(nearbyAbstraction.connectedFlag != 1)
+            {
+                // Automatically accept the connection on both sides.
+                Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId, receiveBytesPayloadListener);
+            }
+            else
+            {
+                Nearby.getConnectionsClient(getContext()).rejectConnection(endpointId);
+            }
         }
 
         @Override
@@ -212,13 +229,14 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
                 {
                     nearbyAbstraction.connectedFlag = -1;
                     Utils.log("The connection was rejected by one or both sides.");
-                    Utils.invalidCodePath();
+                    endendpointId = null;
                     break;
                 }
                 case ConnectionsStatusCodes.STATUS_ERROR:
                 {
-                    nearbyAbstraction.connectedFlag = -1;
+                    nearbyAbstraction.connectedFlag = -2;
                     Utils.logBreak("The connection broke before it was able to be accepted.", gameStart);
+                    endendpointId = null;
                     break;
                 }
             }

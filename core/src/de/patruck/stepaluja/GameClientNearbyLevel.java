@@ -29,10 +29,13 @@ public class GameClientNearbyLevel extends LoadingLevel
                 screenManager.setScreen(new TestLevel(screenManager, playerId, playerId,
                         level, networkManager, false));
             }
-            else
+            else if(screenManager.nearbyAbstraction.connectedFlag == -1)
             {
-                Utils.aassert(screenManager.nearbyAbstraction.connectedFlag == -1);
-                Utils.logBreak("Connect error!", screenManager);
+                screenManager.setScreen(new MsgInfoLevel(screenManager, "The server is already connected to another player!"));
+            }
+            else if(screenManager.nearbyAbstraction.connectedFlag == -2)
+            {
+                Utils.logBreak("Connection error!", screenManager);
             }
         }
     }

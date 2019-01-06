@@ -63,7 +63,7 @@ public class GameServerNearbyLevel extends LoadingLevel
             }
             else
             {
-                Utils.aassert(screenManager.nearbyAbstraction.connectedFlag == -1);
+                Utils.aassert(screenManager.nearbyAbstraction.connectedFlag == -2);
                 Utils.logBreak("Connect error!", screenManager);
             }
         }

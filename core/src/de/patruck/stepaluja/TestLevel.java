@@ -153,6 +153,11 @@ public class TestLevel extends TileMapLevel
         }
         if(sendTimer > maxSendTimer)
         {
+            if(screenManager.nearbyAbstraction.connectedFlag != 1)
+            {
+                screenManager.setScreen(new MsgInfoLevel(screenManager, "The other player disconnected"));
+                return;
+            }
             sendTimer = 0.0f;
             networkManager.write(localPlayer.getPos());
             networkManager.send();
