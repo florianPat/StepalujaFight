@@ -3,7 +3,6 @@ package de.patruck.stepaluja;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -15,9 +14,6 @@ import java.util.ArrayList;
 public class RemotePlayerComponent extends AnimationComponent
 {
     public static final int id = Utils.getGUID();
-
-    protected float speed = 50.0f;
-    private float stateTime = 0.0f;
 
     private enum WalkState
     {
@@ -36,39 +32,17 @@ public class RemotePlayerComponent extends AnimationComponent
 
     private JumpState jumpState = JumpState.NONE;
     private float jumpTimer = 0.0f;
-    private float maxJumpTime = 0.35f;
-
-    private float smashTimer = 0.0f;
-    private final float maxSmashTimer = 0.125f;
-    private JumpState smashState = JumpState.NONE;
-    private short nJumps = 3;
-
-    private Texture textureSmashLeft;
-    private Texture textureSmashRight;
-    private Texture textureSmash;
-    private Rectangle rectSmash;
-    private Collider colliderSmash;
-    private Body bodySmash;
-    private Vector2 size;
-    private float yOffset;
-    private Vector2 offset;
 
     private int playerId;
     private Function smashFunction;
     private boolean lockMotion = false;
     private final float maxHitTimer = 1.0f;
-    private final float maxLockMotionTimer = maxHitTimer / 2.0f;
     private float hitTimer = 0.0f;
-    private Vector2 hitVec = new Vector2();
     private Vector2 hittingVec;
     private boolean getHit = false;
     private final Color hitColor = Color.GOLDENROD;
 
     private Sprite sprite;
-
-    private final float norHitPoints = 50.0f;
-    private float hitPoints = 1.0f;
-    private final float norPlusMultHitPoints = 0.5f;
 
     private final float MIN_CAMERA_ZOOM = 0.35f;
     private final float MAX_CAMERA_ZOOM = 0.65f;
@@ -108,10 +82,6 @@ public class RemotePlayerComponent extends AnimationComponent
 
         camera = cameraIn;
 
-        textureSmashLeft = assetManager.get(textureAtlas[9]);
-        textureSmashRight = assetManager.get(textureAtlas[10]);
-        textureSmash = textureSmashLeft;
-
         //create body
         rect = new Rectangle();
         collider = new Collider(rect);
@@ -122,36 +92,6 @@ public class RemotePlayerComponent extends AnimationComponent
         ooldPos = new Vector2(body.pos);
         nnewPos = new Vector2(body.pos);
 
-        size = new Vector2(16.0f, 16.0f);
-        rectSmash = new Rectangle(0.0f, 0.0f, size.x, size.y);
-        size = new Vector2(16.0f, 16.0f);
-        rectSmash = new Rectangle(0.0f, 0.0f, size.x, size.y);
-        colliderSmash = new Collider(rectSmash);
-        ArrayList<String> sSmash = new ArrayList<String>();
-        switch(gameMode)
-        {
-            case 'P':
-            {
-                sSmash = physics.getAllCollisionIdsWhichContain("Opponent");
-                break;
-            }
-            case 'O':
-            {
-                sSmash.add("Player" + (n == 0 ? 1 : 0));
-                break;
-            }
-            default:
-            {
-                Utils.invalidCodePath();
-                break;
-            }
-        }
-        bodySmash = new Body(new Vector2(rectSmash.getX(), rectSmash.getY()), "PlayerSmashTrigger" + n, colliderSmash, sSmash, true, false);
-        bodySmash.setIsActive(false);
-        physics.addElement(bodySmash);
-
-        yOffset = 8.0f;
-        offset = new Vector2(0.0f, yOffset);
         hittingVec = new Vector2(1.0f, 0.0f);
 
         Utils.aassert(animation.containsKey("right-walk"));
@@ -200,8 +140,6 @@ public class RemotePlayerComponent extends AnimationComponent
     @Override
     public void update(float dt)
     {
-        current = null;
-
         if(respawn)
         {
             jumpTimer += dt;
@@ -259,45 +197,41 @@ public class RemotePlayerComponent extends AnimationComponent
         body.pos = new Vector2(MathUtils.lerp(ooldPos.x, nnewPos.x, currentPosProgrssPercent),
                 MathUtils.lerp(ooldPos.y, nnewPos.y, currentPosProgrssPercent));
         Vector2 newPos = body.pos;
-        offset.x = walkState == WalkState.LEFT ? 0.0f : 16.0f;
-        offset.y = yOffset;
 
-        if(ooldPos.x < nnewPos.x)
+        if(!getHit)
         {
-            walkState = WalkState.RIGHT;
-        }
-        else if(ooldPos.x > nnewPos.x)
-        {
-            walkState = WalkState.LEFT;
-        }
+            if(ooldPos.x < nnewPos.x)
+            {
+                walkState = WalkState.RIGHT;
+            }
+            else if(ooldPos.x > nnewPos.x)
+            {
+                walkState = WalkState.LEFT;
+            }
 
-        switch(walkState)
-        {
-            case LEFT:
+            switch(walkState)
             {
-                Utils.aassert(animation.containsKey("left-walk"));
-                current = animation.get("left-walk").getKeyFrame(0.0f);
-                break;
-            }
-            case RIGHT:
-            {
-                Utils.aassert(animation.containsKey("right-walk"));
-                current = animation.get("right-walk").getKeyFrame(0.0f);
-                break;
-            }
-            default:
-            {
-                Utils.invalidCodePath();
+                case LEFT:
+                {
+                    Utils.aassert(animation.containsKey("left-walk"));
+                    current = animation.get("left-walk").getKeyFrame(0.0f);
+                    break;
+                }
+                case RIGHT:
+                {
+                    Utils.aassert(animation.containsKey("right-walk"));
+                    current = animation.get("right-walk").getKeyFrame(0.0f);
+                    break;
+                }
+                default:
+                {
+                    Utils.invalidCodePath();
+                }
             }
         }
 
         sprite.setTexture(current);
         Physics.applySpriteToBoundingBox(current, collider, newPos);
-
-        offset.add(newPos);
-        rectSmash.x = offset.x;
-        rectSmash.y = offset.y;
-        colliderSmash.updateRectCollider();
     }
 
     @Override
@@ -306,58 +240,44 @@ public class RemotePlayerComponent extends AnimationComponent
         sprite.setPosition(body.pos.x, body.pos.y);
         sprite.draw(spriteBatch);
 
-        if(playerId == 0)
+        Vector2 newCamPos = new Vector2((body.pos.x + camera.position.x) / 2.0f,
+                (body.pos.y + camera.position.y) / 2.0f);
+
+        boolean farAway = false;
+
+        float length = body.pos.x - camera.position.x;
+        if(Math.abs(length) >= 200.0f)
         {
-            camera.position.x = body.pos.x;
-            camera.position.y = body.pos.y;
-
-            camera.zoom = camZoom;
-        }
-        else if(playerId == 1)
-        {
-            Vector2 newCamPos = new Vector2((body.pos.x + camera.position.x) / 2.0f,
-                    (body.pos.y + camera.position.y) / 2.0f);
-
-            boolean farAway = false;
-
-            float length = body.pos.x - camera.position.x;
-            if(Math.abs(length) >= 200.0f)
-            {
-                farAway = true;
-            }
-            else
-            {
-                length = body.pos.y - camera.position.y;
-                if(Math.abs(length) >= 100.0f)
-                {
-                    farAway = true;
-                }
-            }
-
-            if(farAway && newCamZoom != MAX_CAMERA_ZOOM)
-            {
-                newCamZoom = MAX_CAMERA_ZOOM;
-                currentProgress = 0.0f;
-            }
-            else if(!farAway && newCamZoom != MIN_CAMERA_ZOOM)
-            {
-                newCamZoom = MIN_CAMERA_ZOOM;
-                currentProgress = 0.0f;
-            }
-            if(newCamZoom != camZoom)
-            {
-                camZoom = MathUtils.lerp(camZoom, newCamZoom, currentProgress);
-            }
-            camera.zoom = camZoom;
-            camera.position.x = newCamPos.x;
-            camera.position.y = newCamPos.y;
-
-            clipCamera();
+            farAway = true;
         }
         else
         {
-            Utils.invalidCodePath();
+            length = body.pos.y - camera.position.y;
+            if(Math.abs(length) >= 100.0f)
+            {
+                farAway = true;
+            }
         }
+
+        if(farAway && newCamZoom != MAX_CAMERA_ZOOM)
+        {
+            newCamZoom = MAX_CAMERA_ZOOM;
+            currentProgress = 0.0f;
+        }
+        else if(!farAway && newCamZoom != MIN_CAMERA_ZOOM)
+        {
+            newCamZoom = MIN_CAMERA_ZOOM;
+            currentProgress = 0.0f;
+        }
+        if(newCamZoom != camZoom)
+        {
+            camZoom = MathUtils.lerp(camZoom, newCamZoom, currentProgress);
+        }
+        camera.zoom = camZoom;
+        camera.position.x = newCamPos.x;
+        camera.position.y = newCamPos.y;
+
+        clipCamera();
 
         camera.update();
     }
@@ -407,9 +327,6 @@ public class RemotePlayerComponent extends AnimationComponent
             walkState = WalkState.RIGHT;
             jumpState = JumpState.NONE;
             jumpTimer = 0.0f;
-            smashTimer = 0.0f;
-            smashState = JumpState.NONE;
-            nJumps = 3;
             sprite.setColor(Color.WHITE);
             getHit = false;
             respawn = true;
@@ -417,7 +334,7 @@ public class RemotePlayerComponent extends AnimationComponent
         else
         {
             Utils.log("DeadEventData");
-            eventManager.TriggerEvent(new DeadEventData(playerId));
+            eventManager.TriggerEvent(new DeadEventData(false));
         }
     }
 }

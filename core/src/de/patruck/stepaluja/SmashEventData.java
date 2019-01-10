@@ -2,11 +2,13 @@ package de.patruck.stepaluja;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class SmashEventData extends EventData
+import java.io.Serializable;
+
+public class SmashEventData extends EventData implements Serializable
 {
     public static int eventId = Utils.getGUID();
     private int playerId = 0;
-    private Vector2 smashHitDir = new Vector2();
+    private Vector2 smashHitDir;
 
     //NOTE: Only for Kryo!
     public SmashEventData()

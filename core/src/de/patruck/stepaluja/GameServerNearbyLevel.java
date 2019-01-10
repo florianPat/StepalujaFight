@@ -2,9 +2,9 @@ package de.patruck.stepaluja;
 
 public class GameServerNearbyLevel extends LoadingLevel
 {
-    char playerId;
-    char level;
-    NearbyNetworkManager networkManager;
+    private char playerId;
+    private char level;
+    private NearbyNetworkManager networkManager;
 
     public GameServerNearbyLevel(GameStart screenManager, char playerId, char level)
     {
@@ -63,7 +63,6 @@ public class GameServerNearbyLevel extends LoadingLevel
             }
             else
             {
-                Utils.aassert(screenManager.nearbyAbstraction.connectedFlag == -2);
                 Utils.logBreak("Connect error!", screenManager);
             }
         }

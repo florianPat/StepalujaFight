@@ -2,9 +2,11 @@ package de.patruck.stepaluja;
 
 public class GameClientNearbyLevel extends LoadingLevel
 {
-    char playerId;
-    String level;
-    NearbyNetworkManager networkManager;
+    private char playerId;
+    private String level;
+    private NearbyNetworkManager networkManager;
+    private float currentTime = 0.0f;
+    private float connectionTimeout = 6.0f;
 
     public GameClientNearbyLevel(GameStart screenManager, char playerId, String level,
                                  NearbyNetworkManager networkManager)
@@ -21,6 +23,13 @@ public class GameClientNearbyLevel extends LoadingLevel
     public void render(float dt)
     {
         super.render(dt);
+
+        currentTime += dt;
+        if(currentTime > connectionTimeout)
+        {
+            screenManager.setScreen(new MsgInfoLevel(screenManager, "Connection timeout!"));
+            screenManager.nearbyAbstraction.disconnectFromAllEndpoints();
+        }
 
         if(screenManager.nearbyAbstraction.connectedFlag != 0)
         {

@@ -157,23 +157,24 @@ public class OpponentComponent extends AnimationComponent
     {
         if((!getHit) && (!respawn))
         {
+            float yScalar = 1.0f;
+            float xScalar = 1.0f;
+
+            if(smashHitDir.y > 1.0f)
+            {
+                yScalar = smashHitDir.y;
+                xScalar = 0.4f;
+            }
+
             Vector2 smashHitDirNor = new Vector2(smashHitDir).nor();
             Vector2 hittingVecNor = new Vector2(hittingVec).nor();
 
-            if(smashHitDirNor.x != hittingVecNor.x)
-            {
-                hitVec.x = smashHitDirNor.x;
-                hitVec.y = -hittingVecNor.y;
-            }
-            else
-            {
-                hitVec.x = hittingVecNor.x;
-                hitVec.y = -hittingVecNor.y;
-            }
+            hitVec.x = smashHitDirNor.x * xScalar;
+            hitVec.y = yScalar == 1.0f ? (-hittingVecNor.y) : yScalar;
 
             hitVec.scl(norHitPoints * hitPoints);
 
-            if(hitVec.y == 0.0f)
+            if(hitVec.y == 0.0f && body.getTriggerInformation().triggerBodyPart != Physics.TriggerBodyPart.SHOES)
             {
                 hitVec.y = physics.gravity;
             }
@@ -232,8 +233,23 @@ public class OpponentComponent extends AnimationComponent
 
         if(getHit)
         {
+            if(hitTimer != 0.0f)
+            {
+                Physics.TriggerBodyPart triggerBodyPart = body.getTriggerInformation().triggerBodyPart;
+
+                float absHitY = Math.abs(hitVec.y);
+
+                if((absHitY != 0.0f) && (triggerBodyPart == Physics.TriggerBodyPart.HEAD || triggerBodyPart == Physics.TriggerBodyPart.SHOES))
+                    hitVec.y *= -1.0f;
+                else if(absHitY == 0.0f && triggerBodyPart != Physics.TriggerBodyPart.SHOES)
+                    hitVec.y = physics.gravity;
+
+                if(triggerBodyPart == Physics.TriggerBodyPart.LEFT || triggerBodyPart == Physics.TriggerBodyPart.RIGHT)
+                    hitVec.x *= -1.0f;
+            }
+
             body.vel.x = hitVec.x;
-            body.vel.y = hitVec.y;
+            body.vel.y = hitVec.y - 0.5f;
 
             hitTimer += dt;
 

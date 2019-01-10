@@ -82,9 +82,7 @@ public class PracticeLevel extends TileMapLevel
                 Utils.aassert(eventData instanceof DeadEventData);
                 DeadEventData event = (DeadEventData) eventData;
 
-                int playerId = event.getPlayerId();
-
-                Utils.log("Player " + playerId + " is dead!");
+                Utils.log("Player is dead");
 
                 Preferences preferences = Utils.getGlobalPreferences();
                 Utils.aassert(preferences.contains("highscore"));

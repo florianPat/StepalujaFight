@@ -91,7 +91,7 @@ public class OnScreenControls extends InputAdapter
 
     public void updateJustTouched()
     {
-        input.hit = false;
+        //input.hit = false;
         input.jump = false;
     }
 

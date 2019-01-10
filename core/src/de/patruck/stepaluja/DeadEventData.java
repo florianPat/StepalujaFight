@@ -1,18 +1,26 @@
 package de.patruck.stepaluja;
 
-public class DeadEventData extends EventData
+import java.io.Serializable;
+
+public class DeadEventData extends EventData implements Serializable
 {
     public static int eventId = Utils.getGUID();
-    private int playerId;
+    private boolean localDead = false;
 
-    public DeadEventData(int playerIdIn)
+    //NOTE: Only for kryo!
+    public DeadEventData()
     {
         super(eventId);
-        playerId = playerIdIn;
     }
 
-    public int getPlayerId()
+    public DeadEventData(boolean localDeadIn)
     {
-        return playerId;
+        super(eventId);
+        localDead = localDeadIn;
+    }
+
+    public boolean isPlayerLocal()
+    {
+        return localDead;
     }
 }

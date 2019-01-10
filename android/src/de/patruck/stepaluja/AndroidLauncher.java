@@ -201,17 +201,9 @@ public class AndroidLauncher extends AndroidApplication implements PermissionQue
         @Override
         public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo)
         {
-            if(nearbyAbstraction.connectedFlag == 0)
-            {
-                // Automatically accept the connection on both sides.
-                Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId, receiveBytesPayloadListener);
-                Utils.log("Connection accepted!");
-            }
-            else
-            {
-                Nearby.getConnectionsClient(getContext()).rejectConnection(endpointId);
-                Utils.log("Connection rejected!");
-            }
+            // Automatically accept the connection on both sides.
+            Nearby.getConnectionsClient(getContext()).acceptConnection(endpointId, receiveBytesPayloadListener);
+            Utils.log("Connection accepted!");
         }
 
         @Override

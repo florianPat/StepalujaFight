@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class PlayerComponent extends AnimationComponent {
     public static final int id = Utils.getGUID();
 
-    protected float speed = 50.0f;
+    protected float speed = 70.0f;
     private float stateTime = 0.0f;
 
     private enum WalkState
@@ -38,6 +38,8 @@ public class PlayerComponent extends AnimationComponent {
     private float smashTimer = 0.0f;
     private final float maxSmashTimer = 0.5f;
     private JumpState smashState = JumpState.NONE;
+    private float smashHoldBtnTime = 0.0f;
+    private final float goGreenSmashHoldTime = 0.87f;
     private short nJumps = 3;
 
     private Texture textureSmashLeft;
@@ -54,7 +56,6 @@ public class PlayerComponent extends AnimationComponent {
     private Function smashFunction;
     private boolean lockMotion = false;
     private final float maxHitTimer = 1.0f;
-    private final float maxLockMotionTimer = maxHitTimer / 2.0f;
     private float hitTimer = 0.0f;
     private Vector2 hitVec = new Vector2();
     private Vector2 hittingVec;
@@ -74,8 +75,6 @@ public class PlayerComponent extends AnimationComponent {
 
     private OrthographicCamera camera;
     private float camZoom = MAX_CAMERA_ZOOM;
-    private float newCamZoom = MIN_CAMERA_ZOOM;
-    private float currentProgress = 0.0f;
 
     private int tilemapWidth, tilemapHeight;
 
@@ -124,24 +123,12 @@ public class PlayerComponent extends AnimationComponent {
         rectSmash = new Rectangle(0.0f, 0.0f, size.x, size.y);
         colliderSmash = new Collider(rectSmash);
         ArrayList<String> sSmash = new ArrayList<String>();
-        switch(gameMode)
-        {
-            case 'P':
-            {
-                sSmash = physics.getAllCollisionIdsWhichContain("Opponent");
-                break;
-            }
-            case 'O':
-            {
-                sSmash.add("Player" + (n == 0 ? 1 : 0));
-                break;
-            }
-            default:
-            {
-                Utils.invalidCodePath();
-                break;
-            }
-        }
+
+        if(gameMode == 'P')
+            sSmash = physics.getAllCollisionIdsWhichContain("Opponent");
+        else
+            sSmash.add("Player" + (n == 0 ? 1 : 0));
+
         bodySmash = new Body(new Vector2(rectSmash.getX(), rectSmash.getY()), "PlayerSmashTrigger" + n, colliderSmash, sSmash, true, false);
         bodySmash.setIsActive(false);
         physics.addElement(bodySmash);
@@ -183,23 +170,24 @@ public class PlayerComponent extends AnimationComponent {
     {
         if((!getHit) && (!respawn))
         {
+            float yScalar = 1.0f;
+            float xScalar = 1.0f;
+
+            if(smashHitDir.y > 1.0f)
+            {
+                yScalar = smashHitDir.y;
+                xScalar = 0.4f;
+            }
+
             Vector2 smashHitDirNor = new Vector2(smashHitDir).nor();
             Vector2 hittingVecNor = new Vector2(hittingVec).nor();
 
-            if(smashHitDirNor.x != hittingVecNor.x)
-            {
-                hitVec.x = smashHitDirNor.x;
-                hitVec.y = -hittingVecNor.y;
-            }
-            else
-            {
-                hitVec.x = hittingVecNor.x;
-                hitVec.y = -hittingVecNor.y;
-            }
+            hitVec.x = smashHitDirNor.x * xScalar;
+            hitVec.y = (-hittingVecNor.y) * yScalar;
 
             hitVec.scl(norHitPoints * hitPoints);
 
-            if(hitVec.y == 0.0f)
+            if(Math.abs(hitVec.y) == 0.0f && body.getTriggerInformation().triggerBodyPart != Physics.TriggerBodyPart.SHOES)
             {
                 hitVec.y = physics.gravity;
             }
@@ -209,6 +197,7 @@ public class PlayerComponent extends AnimationComponent {
             getHit = true;
             sprite.setColor(hitColor);
             jumpState = JumpState.FALLING;
+            smashState = JumpState.NONE;
         }
     }
 
@@ -218,8 +207,6 @@ public class PlayerComponent extends AnimationComponent {
 
         eventData = null;
         liveLess = false;
-
-        currentProgress += 0.05f * dt;
 
         stateTime += dt;
         current = null;
@@ -233,12 +220,12 @@ public class PlayerComponent extends AnimationComponent {
                 smashTimer = 0.0f;
                 smashState = JumpState.NONE;
                 bodySmash.setIsActive(false);
+                sprite.setColor(Color.WHITE);
+                smashHoldBtnTime = 0.0f;
             }
             if(body.vel.x != 0.0f)
             {
-                body.vel.x = MathUtils.lerp(velX, 0.0f, smashTimer / maxSmashTimer);
-
-                Utils.log("Vel.x:" + body.vel.x);
+                body.vel.x = MathUtils.lerp(velX, 0.0f, smashTimer / (maxSmashTimer * 0.75f));
             }
         }
         else
@@ -280,16 +267,25 @@ public class PlayerComponent extends AnimationComponent {
 
         if(getHit)
         {
+            if(hitTimer != 0.0f)
+            {
+                Physics.TriggerBodyPart triggerBodyPart = body.getTriggerInformation().triggerBodyPart;
+
+                float absHitY = Math.abs(hitVec.y);
+
+                if((absHitY != 0.0f) && (triggerBodyPart == Physics.TriggerBodyPart.HEAD || triggerBodyPart == Physics.TriggerBodyPart.SHOES))
+                    hitVec.y *= -1.0f;
+                else if(absHitY == 0.0f && triggerBodyPart != Physics.TriggerBodyPart.SHOES)
+                    hitVec.y = physics.gravity;
+
+                if(triggerBodyPart == Physics.TriggerBodyPart.LEFT || triggerBodyPart == Physics.TriggerBodyPart.RIGHT)
+                    hitVec.x *= -1.0f;
+            }
+
             body.vel.x = hitVec.x;
-            body.vel.y = hitVec.y;
+            body.vel.y = hitVec.y - 0.5f;
 
             hitTimer += dt;
-
-            if(hitTimer >= maxLockMotionTimer)
-            {
-                lockMotion = false;
-                sprite.setColor(Color.WHITE);
-            }
 
             if(hitTimer >= maxHitTimer)
             {
@@ -299,6 +295,8 @@ public class PlayerComponent extends AnimationComponent {
                 getHit = false;
                 body.vel.x = 0.0f;
                 body.vel.y = physics.gravity * 2.0f;
+                lockMotion = false;
+                sprite.setColor(Color.WHITE);
             }
         }
 
@@ -352,10 +350,26 @@ public class PlayerComponent extends AnimationComponent {
             if(inputSystem.isHitPressed() && smashState == JumpState.NONE)
             {
                 textureSmash = walkState == WalkState.RIGHT ? textureSmashRight : textureSmashLeft;
-                current = textureSmash;
+                smashState = JumpState.FALLING;
+                velX = body.vel.x;
+            }
+        }
+
+        if(smashState == JumpState.FALLING)
+        {
+            smashHoldBtnTime += dt;
+            current = textureSmash;
+
+            if(smashHoldBtnTime > goGreenSmashHoldTime)
+                sprite.setColor(Color.GREEN);
+
+            if(!inputSystem.isHitPressed())
+            {
+                if(smashHoldBtnTime >= (dt * 4.0f))
+                    velX = 0.0f;
+
                 bodySmash.setIsActive(true);
                 smashState = JumpState.JUMPING;
-                velX = body.vel.x;
             }
         }
 
@@ -388,15 +402,23 @@ public class PlayerComponent extends AnimationComponent {
         if(bodySmash.getIsTriggered())
         {
             bodySmash.setIsActive(false);
+
+            Vector2 hittingVecEvent;
+
+            if(smashHoldBtnTime > goGreenSmashHoldTime)
+                hittingVecEvent = new Vector2(hittingVec.x, 1.5f);
+            else
+                hittingVecEvent = new Vector2(hittingVec.x, hittingVec.y);
+
             if(gameMode == 'P')
             {
                 String hitOpponent = bodySmash.getTriggerInformation().triggerElementCollision;
                 char numberChar = hitOpponent.charAt(hitOpponent.length() - 1);
-                eventManager.TriggerEvent(new SmashEventData(numberChar - '0', hittingVec));
+                eventManager.TriggerEvent(new SmashEventData(numberChar - '0', hittingVecEvent));
             }
             else
             {
-                eventData = new SmashEventData(playerId == 0 ? 1 : 0, hittingVec);
+                eventData = new SmashEventData(playerId == 0 ? 1 : 0, hittingVecEvent);
                 eventManager.TriggerEvent(eventData);
             }
         }
@@ -433,8 +455,8 @@ public class PlayerComponent extends AnimationComponent {
                 newPos.y > tilemapHeight + current.getHeight() ||
                 newPos.x > tilemapWidth + current.getWidth())
         {
+            liveLess = true;
             --nLives;
-            heartComponent.setHeartState(nLives, HeartComponent.HeartState.EMPTY);
             if(nLives > 0)
             {
                 newPos = new Vector2(450 + (playerId == 0 ? 0 : 100), tilemapHeight - 64);
@@ -453,11 +475,13 @@ public class PlayerComponent extends AnimationComponent {
                 getHit = false;
                 respawn = true;
                 hitPoints = 1.0f;
-                liveLess = true;
+                heartComponent.setHeartState(nLives, HeartComponent.HeartState.EMPTY);
+                smashHoldBtnTime = 0.0f;
             }
             else
             {
-                eventManager.TriggerEvent(new DeadEventData(playerId));
+                eventManager.TriggerEvent(new DeadEventData(true));
+                lockMotion = true;
             }
         }
 
@@ -477,62 +501,23 @@ public class PlayerComponent extends AnimationComponent {
         sprite.setPosition(body.pos.x, body.pos.y);
         sprite.draw(spriteBatch);
 
-        if(playerId == 0)
+        if(gameMode == 'P')
         {
             camera.position.x = body.pos.x;
             camera.position.y = body.pos.y;
 
             camera.zoom = camZoom;
 
-            if(gameMode == 'P')
-            {
-                clipCamera();
-            }
-        }
-        else if(playerId == 1)
-        {
-            Vector2 newCamPos = new Vector2((body.pos.x + camera.position.x) / 2.0f,
-                    (body.pos.y + camera.position.y) / 2.0f);
-
-            boolean farAway = false;
-
-            float length = body.pos.x - camera.position.x;
-            if(Math.abs(length) >= 200.0f)
-            {
-                farAway = true;
-            }
-            else
-            {
-                length = body.pos.y - camera.position.y;
-                if(Math.abs(length) >= 100.0f)
-                {
-                    farAway = true;
-                }
-            }
-
-            if(farAway && newCamZoom != MAX_CAMERA_ZOOM)
-            {
-                newCamZoom = MAX_CAMERA_ZOOM;
-                currentProgress = 0.0f;
-            }
-            else if(!farAway && newCamZoom != MIN_CAMERA_ZOOM)
-            {
-                newCamZoom = MIN_CAMERA_ZOOM;
-                currentProgress = 0.0f;
-            }
-            if(newCamZoom != camZoom)
-            {
-                camZoom = MathUtils.lerp(camZoom, newCamZoom, currentProgress);
-            }
-            camera.zoom = camZoom;
-            camera.position.x = newCamPos.x;
-            camera.position.y = newCamPos.y;
-
             clipCamera();
         }
         else
         {
-            Utils.invalidCodePath();
+            camera.position.x = body.pos.x;
+            camera.position.y = body.pos.y;
+
+            camera.zoom = camZoom;
+
+            clipCamera();
         }
 
         camera.update();

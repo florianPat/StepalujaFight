@@ -1,6 +1,7 @@
 package de.patruck.stepaluja;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -23,8 +24,8 @@ public class NearbyNetworkManager
     {
         nearbyAbstraction = nearbyAbstractionIn;
 
-        buffer = ByteBuffer.allocate(256);
-        bufferBytesRead = new byte[256];
+        buffer = ByteBuffer.allocate(256 * 5);
+        bufferBytesRead = new byte[256 * 5];
         bufferBytesWrite = new byte[256];
 
         kryo = new Kryo();
@@ -32,9 +33,11 @@ public class NearbyNetworkManager
         input = new Input(bufferBytesRead);
 
         //NOTE: Register classes here!
-        kryo.register(Vector2.class);
-        kryo.register(SmashEventData.class);
-        kryo.register(String.class);
+        kryo.register(Vector2.class, 10);
+        kryo.register(SmashEventData.class, 11);
+        kryo.register(Vector3.class, 12);
+        kryo.register(DeadEventData.class, 13);
+        kryo.register(EventData.class, 14);
     }
 
     public void write(Object o)

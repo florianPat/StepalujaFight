@@ -82,7 +82,10 @@ public class NearbyServerList
             int firstIndex = (int) localYStart;
             viewportPosition.y -= rect.y;
             Utils.aassert(selectIndex == -1);
-            selectIndex = ((int) (viewportPosition.y / getItemHeight())) + firstIndex;
+            if(listItems.isEmpty())
+                selectIndex = -1;
+            else
+                selectIndex = ((int) (viewportPosition.y / getItemHeight())) + firstIndex;
         }
         distanceDragged = 0.0f;
         dragPointer = -1;
