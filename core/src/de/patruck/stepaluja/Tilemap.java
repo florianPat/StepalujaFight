@@ -5,9 +5,11 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,9 +19,9 @@ public class Tilemap {
 
     private class Tile
     {
-        private Texture texture;
+        private TextureAtlas.AtlasRegion texture;
 
-        public Tile(Texture texture, boolean collider, Vector2 pos, Body body)
+        public Tile(TextureAtlas.AtlasRegion texture, boolean collider, Vector2 pos, Body body)
         {
             this.texture = texture;
             if(collider)
@@ -32,7 +34,8 @@ public class Tilemap {
 
                     PhysicsElement physicsElement = new PhysicsElement();
                     physicsElement.collisionIds = new ArrayList<String>();
-                    physicsElement.collider = new Collider(new Rectangle(pos.x, pos.y, texture.getWidth(), texture.getHeight()));
+                    physicsElement.collider = new Collider(new Rectangle(pos.x, pos.y, texture.getRegionWidth(),
+                            texture.getRegionHeight()));
 
                     body.physicsElments.add(physicsElement);
                     return;
@@ -41,21 +44,23 @@ public class Tilemap {
                 if(((last.unionCollider.rect.x + last.unionCollider.rect.width) == pos.x)
                         && ((last.unionCollider.rect.y == pos.y)))
                 {
-                    last.unionCollider.rect.merge(new Rectangle(pos.x, pos.y, texture.getWidth(), texture.getHeight()));
+                    last.unionCollider.rect.merge(new Rectangle(pos.x, pos.y, texture.getRegionWidth(),
+                            texture.getRegionHeight()));
                     last.updateRectCollider();
                 }
                 else
                 {
                     PhysicsElement physicsElement = new PhysicsElement();
                     physicsElement.collisionIds = new ArrayList<String>();
-                    physicsElement.collider = new Collider(new Rectangle(pos.x, pos.y, texture.getWidth(), texture.getHeight()));
+                    physicsElement.collider = new Collider(new Rectangle(pos.x, pos.y, texture.getRegionWidth(),
+                            texture.getRegionHeight()));
 
                     body.physicsElments.add(physicsElement);
                 }
             }
         }
 
-        public final Texture getTexture()
+        public final TextureAtlas.AtlasRegion getTexture()
         {
             return texture;
         }
@@ -68,14 +73,15 @@ public class Tilemap {
     private int width, height;
     private Body body = new Body(new Vector2(0.0f, 0.0f), "Ground", new Collider(new Circle(0.0f, 0.0f, 1.0f)), new ArrayList<String>(), false, true);
 
-    private Texture gras;
-    private Texture dirt;
-    private Texture stone;
-    private Texture lava;
-    private Texture water;
-    private Texture sky;
-    private Texture caveTransition;
-    private Texture cave;
+    private TextureAtlas.AtlasRegion gras;
+    private TextureAtlas.AtlasRegion dirt;
+    private TextureAtlas.AtlasRegion stone;
+    private TextureAtlas.AtlasRegion lava;
+    private TextureAtlas.AtlasRegion water;
+    private TextureAtlas.AtlasRegion sky;
+    private TextureAtlas.AtlasRegion caveTransition;
+    private TextureAtlas.AtlasRegion cave;
+
     private Physics physics;
 
     /**
@@ -86,6 +92,8 @@ public class Tilemap {
     public Tilemap(String filename, AssetManager assetManager, Physics physics, GameStart screenManager)
     {
         this.physics = physics;
+
+        assetManager.load("tileset/tileset.atlas", TextureAtlas.class);
 
         assetManager.load("tileset/gras.jpg", Texture.class);
         assetManager.load("tileset/dirt.jpg", Texture.class);
@@ -98,14 +106,16 @@ public class Tilemap {
 
         assetManager.finishLoading();
 
-        gras = assetManager.get("tileset/gras.jpg");
-        dirt = assetManager.get("tileset/dirt.jpg");
-        stone = assetManager.get("tileset/stone.jpg");
-        lava = assetManager.get("tileset/lava.jpg");
-        water = assetManager.get("tileset/water.jpg");
-        sky = assetManager.get("tileset/sky.jpg");
-        caveTransition = assetManager.get("tileset/caveTransition.jpg");
-        cave = assetManager.get("tileset/cave.jpg");
+        TextureAtlas textureAtlas = assetManager.get("tileset/tileset.atlas");
+        Array<TextureAtlas.AtlasRegion> atlasRegions = textureAtlas.getRegions();
+        cave = atlasRegions.get(0);
+        caveTransition = atlasRegions.get(1);
+        dirt = atlasRegions.get(2);
+        gras = atlasRegions.get(3);
+        lava = atlasRegions.get(4);
+        sky = atlasRegions.get(5);
+        stone = atlasRegions.get(6);
+        water = atlasRegions.get(7);
 
         try
         {
